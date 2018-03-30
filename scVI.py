@@ -104,6 +104,27 @@ def log_zinb_positive(x, mu, theta, pi, eps=1e-8):
     return tf.reduce_sum(res, axis=-1)
 
 
+def log_nb_positive(x, mu, theta, eps=1e-8):
+    """
+    log likelihood (scalar) of a minibatch according to a nb model. 
+    
+    Variables:
+    mu: mean of the negative binomial (has to be positive support) (shape: minibatch x genes)
+    theta: inverse dispersion parameter (has to be positive support) (shape: minibatch x genes)
+    eps: numerical stability constant
+    """
+    res = (
+        tf.lgamma(x + theta)
+        - tf.lgamma(theta)
+        - tf.lgamma(x + 1)
+        + x * tf.log(mu + eps)
+        - x * tf.log(theta + mu + eps)
+        + theta * tf.log(theta + eps)
+        - theta * tf.log(theta + mu + eps)
+    )
+    return tf.reduce_sum(res, axis=-1)
+
+
 def doublewrap(function):
     """
     A decorator decorator, allowing to use the decorator to be used without
@@ -249,8 +270,9 @@ class scVIModel:
         n_hidden=128,
         n_latent=10,
         dropout_rate=0.1,
-        log_variational=False,
+        log_variational=True,
         optimize_algo=None,
+        zi=True,
     ):
         """
         Main parametrization of the scVI algorithm.
@@ -278,6 +300,7 @@ class scVIModel:
         dropout_rate: rate to use for the dropout layer (see elementary layer function). always 0.1
         log_variational: whether to apply a logarithmic layer at the input of the variational network (for < 4000 cells datasets)
         optimize_algo: a tensorflow optimizer
+        zi: whether to use a ZINB or a NB distribution
         """
 
         # Gene expression placeholder
@@ -351,6 +374,10 @@ class scVIModel:
             + self.dispersion
             + " for modeling inverse dispersion param"
         )
+
+        self.zi = zi
+        if zi:
+            print("Will apply zero inflation")
 
         # neural nets architecture
         self.n_hidden = n_hidden
@@ -471,12 +498,14 @@ class scVIModel:
         else:
             h = self.z
 
+        # h = dense(h, self.n_hidden,
+        #          activation=tf.nn.relu, bn=True, keep_prob=self.dropout_rate, phase=self.training_phase)
         h = dense(
             h,
             self.n_hidden,
             activation=tf.nn.relu,
             bn=True,
-            keep_prob=self.dropout_rate,
+            keep_prob=None,
             phase=self.training_phase,
         )
 
@@ -529,14 +558,15 @@ class scVIModel:
         self.px_rate = tf.exp(self.library) * self.px_scale
 
         # dropout
-        self.px_dropout = dense(
-            h,
-            self.n_input,
-            activation=None,
-            bn=False,
-            keep_prob=None,
-            phase=self.training_phase,
-        )
+        if self.zi:
+            self.px_dropout = dense(
+                h,
+                self.n_input,
+                activation=None,
+                bn=False,
+                keep_prob=None,
+                phase=self.training_phase,
+            )
 
     @define_scope
     def optimize(self):
@@ -558,9 +588,12 @@ class scVIModel:
             local_l_var = tf.matmul(self.batch, self.library_size_var)
 
         # VAE loss
-        recon = log_zinb_positive(
-            self.expression, self.px_rate, local_dispersion, self.px_dropout
-        )
+        if self.zi:
+            recon = log_zinb_positive(
+                self.expression, self.px_rate, local_dispersion, self.px_dropout
+            )
+        else:
+            recon = log_nb_positive(self.expression, self.px_rate, local_dispersion)
 
         kl_gauss_z = 0.5 * tf.reduce_sum(
             tf.square(self.qz_m) + self.qz_v - tf.log(1e-8 + self.qz_v) - 1, 1
@@ -601,9 +634,10 @@ class scVIModel:
     @define_scope
     def imputation(self):
         # more information of zero probabilities
-        self.zero_prob = tf.nn.softplus(
-            -self.px_dropout
-            + tf.exp(self.px_r) * self.px_r
-            - tf.exp(self.px_r) * tf.log(tf.exp(self.px_r) + self.px_rate + 1e-8)
-        ) - tf.nn.softplus(-self.px_dropout)
-        self.dropout_prob = -tf.nn.softplus(-self.px_dropout)
+        if self.zi:
+            self.zero_prob = tf.nn.softplus(
+                -self.px_dropout
+                + tf.exp(self.px_r) * self.px_r
+                - tf.exp(self.px_r) * tf.log(tf.exp(self.px_r) + self.px_rate + 1e-8)
+            ) - tf.nn.softplus(-self.px_dropout)
+            self.dropout_prob = -tf.nn.softplus(-self.px_dropout)
