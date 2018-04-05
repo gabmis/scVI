@@ -7,6 +7,7 @@ import collections
 import numpy as np
 import torch
 import torch.nn as nn
+from scipy.stats import truncnorm
 from torch.autograd import Variable
 
 
@@ -18,8 +19,10 @@ class VAE(nn.Module):
         n_hidden=128,
         n_latent=10,
         n_layers=1,
-        dropout_rate=0.0,
+        dropout_rate=0.1,
         dispersion="gene",
+        log_variational=True,
+        kl_scale=1,
     ):
         super(VAE, self).__init__()
 
@@ -31,10 +34,12 @@ class VAE(nn.Module):
         self.library = 0
         self.z = 0
         self.dispersion = dispersion
+        self.log_variational = log_variational
+        self.kl_scale = kl_scale
         if self.dispersion == "gene":
             np.random.seed(1)
-            eps = np.random.normal(0, 1, (self.n_input,))
-            self.px_r = Variable(torch.from_numpy(eps).type(torch.FloatTensor))
+            pxr = np.random.normal(0, 1, (self.n_input,))
+            self.px_r = Variable(torch.from_numpy(pxr).type(torch.FloatTensor))
 
         # Encoding q(z/x)
         # TODO: BatchNorm with params : eps=1e-3, momentum=0.99
@@ -43,7 +48,7 @@ class VAE(nn.Module):
         self.first_layer = nn.Sequential(
             nn.Dropout(p=self.dropout_rate),
             nn.Linear(n_input, n_hidden),
-            # nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
+            nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
             nn.ReLU(),
         )
 
@@ -55,7 +60,7 @@ class VAE(nn.Module):
                     nn.Sequential(
                         nn.Dropout(p=self.dropout_rate),
                         nn.Linear(n_hidden, n_hidden),
-                        # nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
+                        nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
                         nn.ReLU(),
                     ),
                 )
@@ -81,7 +86,7 @@ class VAE(nn.Module):
         self.l_encoder_initial = nn.Sequential(
             nn.Dropout(p=self.dropout_rate),
             nn.Linear(n_input, n_hidden),
-            # nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
+            nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
             nn.ReLU(),
         )
 
@@ -97,7 +102,7 @@ class VAE(nn.Module):
         # There is always a first layer
         self.decoder_first_layer = nn.Sequential(
             nn.Linear(n_latent, n_hidden),
-            # nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
+            nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
             nn.ReLU(),
         )
 
@@ -110,7 +115,7 @@ class VAE(nn.Module):
                         nn.Sequential(
                             nn.Dropout(p=self.dropout_rate),
                             nn.Linear(n_hidden, n_hidden),
-                            # nn.BatchNorm1d(n_hidden),
+                            nn.BatchNorm1d(n_hidden, eps=1e-3, momentum=0.99),
                             nn.ReLU(),
                         ),
                     )
@@ -147,7 +152,19 @@ class VAE(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Linear):
-                m.weight.data.fill_(0.01)
+                # np.random.seed(1)
+                # initializer=np.random.normal(0, 0.01,size=(m.in_features,m.out_features)).T
+                STD = 0.01
+                initializer = truncnorm.rvs(
+                    -2 * STD,
+                    2 * STD,
+                    loc=0,
+                    scale=STD,
+                    size=(m.out_features, m.in_features),
+                )
+                m.weight.data = torch.from_numpy(initializer).type(torch.FloatTensor)
+
+                # m.weight.data.fill_(0.01)
 
     def reparameterize(self, mu, var):
         """"z = mean + eps * sigma where eps is sampled from N(0, 1)."""
@@ -164,6 +181,9 @@ class VAE(nn.Module):
 
     def forward(self, x):
         # Parameters for z latent distribution
+        if self.log_variational:
+            x = torch.log(1 + x)
+
         qz_m = self.z_mean_encoder(x)
         qz_v = torch.exp(self.z_var_encoder(x))
 
