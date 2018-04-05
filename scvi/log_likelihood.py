@@ -78,14 +78,6 @@ def log_zinb_positive_approx(x, mu, theta, pi, eps=1e-8):
     pi: logit of the dropout parameter (real support) (shape: minibatch x genes)
     eps: numerical stability constant
     """
-    # case_zero = torch.log(
-    # torch.exp((- pi + theta * torch.log(theta + eps) - theta * torch.log(theta + mu + eps))) + 1)
-    # - torch.log(torch.exp(-pi) + 1)
-    #
-    # case_non_zero = - pi - torch.log(torch.exp(-pi) + 1) + theta * torch.log(theta + eps) - theta * torch.log(
-    #     theta + mu + eps) + x * torch.log(mu + eps) - x * torch.log(theta + mu + eps) - torch.log(
-    #     x + theta) + torch.log(theta + eps) + torch.log(x + 1)
-
     case_zero = torch.log(
         torch.exp(
             (-pi + theta * torch.log(theta + eps) - theta * torch.log(theta + mu + eps))
@@ -94,9 +86,17 @@ def log_zinb_positive_approx(x, mu, theta, pi, eps=1e-8):
     )
     -torch.log(torch.exp(-pi) + 1)
 
+    def softplus(x):
+        return torch.log(1 + torch.exp(x))
+
+    case_zero = softplus(
+        (-pi + theta * torch.log(theta + eps) - theta * torch.log(theta + mu + eps))
+    )
+    -softplus(-pi)
+
     case_non_zero = (
         -pi
-        - torch.log(torch.exp(-pi) + 1)
+        - softplus(-pi)
         + theta * torch.log(theta + eps)
         - theta * torch.log(theta + mu + eps)
         + x * torch.log(mu + eps)
@@ -110,7 +110,6 @@ def log_zinb_positive_approx(x, mu, theta, pi, eps=1e-8):
     mask[mask < eps] = 1
     mask[mask >= eps] = 0
     res = torch.mul(mask, case_zero) + torch.mul(1 - mask, case_non_zero)
-
     return torch.sum(res, dim=-1)
 
 
