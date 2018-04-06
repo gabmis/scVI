@@ -93,7 +93,7 @@ def compute_log_likelihood(vae, gene_dataset):
     for i_batch, (sample_batched, local_l_mean, local_l_var, batch_index) in enumerate(
         data_loader_test
     ):
-        sample_batched = Variable(sample_batched, requires_grad=False)
+        sample_batched = Variable(sample_batched.type(dtype), requires_grad=False)
         px_scale, px_r, px_rate, px_dropout, qz_m, qz_v, ql_m, ql_v = vae(
             sample_batched
         )
