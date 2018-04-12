@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-from scvi.log_likelihood import log_zinb_positive
+from scvi.log_likelihood import log_zinb_positive, log_nb_positive
 
 
 # VAE model
@@ -21,6 +21,7 @@ class VAE(nn.Module):
         dispersion="gene",
         log_variational=True,
         kl_scale=1,
+        reconstruction_loss="zinb",
     ):
         super(VAE, self).__init__()
 
@@ -34,8 +35,9 @@ class VAE(nn.Module):
         self.dispersion = dispersion
         self.log_variational = log_variational
         self.kl_scale = kl_scale
+        self.reconstruction_loss = reconstruction_loss
         if self.dispersion == "gene":
-            self.register_buffer("px_r", torch.randn(self.n_input))
+            self.register_buffer("px_r", Variable(torch.randn(self.n_input)))
 
         self.encoder = Encoder(
             n_input,
@@ -87,9 +89,12 @@ class VAE(nn.Module):
         )
 
         # Reconstruction Loss
-        reconst_loss = -log_zinb_positive(
-            sampled_batch, px_rate, torch.exp(Variable(px_r)), px_dropout
-        )
+        if self.reconstruction_loss == "zinb":
+            reconst_loss = -log_zinb_positive(
+                sampled_batch, px_rate, torch.exp(px_r), px_dropout
+            )
+        elif self.reconstruction_loss == "nb":
+            reconst_loss = -log_nb_positive(sampled_batch, px_rate, torch.exp(px_r))
 
         # KL Divergence
         kl_divergence_z = torch.sum(
@@ -107,12 +112,34 @@ class VAE(nn.Module):
             dim=1,
         )
 
-        kl_ponderation = Variable(kl_ponderation)
         kl_divergence = kl_divergence_z + kl_divergence_l
 
-        # Total Loss
-        total_loss = torch.mean(reconst_loss + kl_ponderation * kl_divergence)
-        return total_loss, reconst_loss, kl_divergence
+        # Train Loss # Not real total loss
+        train_loss = torch.mean(reconst_loss + kl_ponderation * kl_divergence)
+        return train_loss, reconst_loss, kl_divergence
+
+    def compute_log_likelihood(self, data_loader):
+        # Iterate once over the data_loader and computes the total log_likelihood
+        log_lkl = 0
+        for (
+            i_batch,
+            (sample_batched, local_l_mean, local_l_var, batch_index),
+        ) in enumerate(data_loader):
+            sample_batched = Variable(sample_batched)
+            if torch.cuda.is_available():
+                sample_batched = sample_batched.cuda()
+
+            px_scale, px_r, px_rate, px_dropout, qz_m, qz_v, ql_m, ql_v = self(
+                sample_batched
+            )
+            if self.reconstruction_loss == "zinb":
+                sample_loss = -log_zinb_positive(
+                    sample_batched, px_rate, torch.exp(px_r), px_dropout
+                )
+            elif self.reconstruction_loss == "nb":
+                sample_loss = -log_nb_positive(sample_batched, px_rate, torch.exp(px_r))
+            log_lkl += torch.sum(sample_loss).data[0]
+        return log_lkl / len(data_loader.dataset)
 
 
 # Encoder
