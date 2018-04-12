@@ -6,11 +6,6 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-if torch.cuda.is_available():
-    dtype = torch.cuda.FloatTensor
-else:
-    dtype = torch.FloatTensor
-
 
 class GeneExpressionDataset(Dataset):
     """Gene Expression dataset. It deals with:
@@ -47,7 +42,9 @@ class GeneExpressionDataset(Dataset):
                 )
             ]
 
-        self.X = torch.cat(new_Xs, dim=0)  # .type(dtype)
+        self.X = torch.cat(new_Xs, dim=0)
+        if torch.cuda.is_available():  # TODO: check valid
+            self.X.cuda()
         self.total_size = self.X.size(0)
 
     def get_all(self):
@@ -55,7 +52,7 @@ class GeneExpressionDataset(Dataset):
 
     def get_batches(self):
         dtype = torch.cuda.IntTensor if torch.cuda.is_available() else torch.IntTensor
-        return self.X[:, -1].type(dtype).numpy()
+        return self.X[:, -1:].type(dtype).numpy()
 
     def __len__(self):
         return self.total_size
@@ -64,9 +61,9 @@ class GeneExpressionDataset(Dataset):
         # Returns the triplet (X, local_mean, local_var)
         return (
             self.X[idx, : self.nb_genes],
-            self.X[idx, self.nb_genes],
-            self.X[idx, self.nb_genes + 1],
-            self.X[idx, self.nb_genes + 2],
+            self.X[idx, -3:-2],
+            self.X[idx, -2:-1],
+            self.X[idx, -1:],
         )
 
     @staticmethod

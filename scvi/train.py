@@ -18,9 +18,9 @@ def train(vae, data_loader, n_epochs=20, learning_rate=0.001, kl=None):
             i_batch,
             (sample_batch, local_l_mean, local_l_var, batch_index),
         ) in enumerate(data_loader):
-            sample_batch = Variable(sample_batch.type(dtype), requires_grad=False)
-            local_l_mean = Variable(local_l_mean.type(dtype), requires_grad=False)
-            local_l_var = Variable(local_l_var.type(dtype), requires_grad=False)
+            sample_batch = Variable(sample_batch)
+            local_l_mean = Variable(local_l_mean)
+            local_l_var = Variable(local_l_var)
 
             if kl is None:
                 kl_ponderation = min(1, epoch / 400.0)
@@ -29,7 +29,7 @@ def train(vae, data_loader, n_epochs=20, learning_rate=0.001, kl=None):
 
             # Train loss is actually different from the real loss due to kl_ponderation
             train_loss, reconst_loss, kl_divergence = vae.loss(
-                sample_batch, local_l_mean, local_l_var, kl_ponderation
+                sample_batch, local_l_mean, local_l_var, dtype([kl_ponderation])
             )
             real_loss = reconst_loss + kl_divergence
             optimizer.zero_grad()
