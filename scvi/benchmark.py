@@ -54,8 +54,8 @@ def run_benchmarks(
 
     # - imputation
 
-    imputation_score = imputation(vae, gene_dataset_train)
-    print("Imputation score (MAE) is:", imputation_score)
+    imputation_train = imputation(vae, data_loader_train)
+    print("Imputation score on train (MAE) is:", imputation_train)
 
     # - batch mixing
     if gene_dataset_train.n_batches == 2:
