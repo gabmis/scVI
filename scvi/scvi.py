@@ -62,6 +62,13 @@ class VAE(nn.Module):
             n_batch=n_batch,
         )
 
+    def sample_from_posterior(self, x):
+        # Here we compute as little as possible to have q(z|x)
+        qz = self.encoder.z_encoder(x)
+        qz_m = self.encoder.z_mean_encoder(qz)
+        qz_v = torch.exp(self.encoder.z_var_encoder(qz))
+        return self.reparameterize(qz_m, qz_v)
+
     def reparameterize(self, mu, var):
         std = torch.sqrt(var)
         eps = Variable(std.data.new(std.size()).normal_())
