@@ -13,6 +13,16 @@ def imputation(vae, data_loader, rate=0.1):
             np.random.choice(range(len(i)), int(np.floor(rate * len(i))), replace=False)
         )
         dropout_batch[i[ix], j[ix]] *= 0
+
+        if torch.cuda.is_available():
+            batch_index = batch_index.cuda()
+            dropout_batch = dropout_batch.cuda()
+            sample_batch = sample_batch.cuda()
+            distance_list = distance_list.cuda()
+            ix = ix.cuda()
+            i = i.cuda()
+            j = j.cuda()
+
         _, _, px_rate, _, _, _, _, _ = vae(dropout_batch, batch_index)
         distance_list = torch.cat(
             [

@@ -22,8 +22,6 @@ def run_benchmarks(
     # - batch mixing
     # - cluster scores
 
-    torch.backends.cudnn.benchmark = True
-
     data_loader_train = DataLoader(
         gene_dataset_train, batch_size=128, shuffle=True, num_workers=1
     )
