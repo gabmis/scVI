@@ -62,6 +62,9 @@ def run_benchmarks(
         latent = []
         batch_indices = []
         for sample_batch, local_l_mean, local_l_var, batch_index in data_loader_train:
+            if torch.cuda.is_available():
+                sample_batch = sample_batch.cuda()
+                batch_index = batch_index.cuda()
             latent += [
                 vae.sample_from_posterior(sample_batch)
             ]  # Just run a forward pass on all the data
@@ -70,5 +73,7 @@ def run_benchmarks(
         batch_indices = torch.cat(batch_indices)
         print(
             "Entropy batch mixing :",
-            entropy_batch_mixing(latent.data.numpy(), batch_indices.numpy()),
+            entropy_batch_mixing(
+                latent.data.cpu().numpy(), batch_indices.cpu().numpy()
+            ),
         )
