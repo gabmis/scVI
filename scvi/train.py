@@ -20,9 +20,10 @@ def train(
             local_l_var = Variable(local_l_var)
 
             if torch.cuda.is_available():
-                sample_batch = sample_batch.cuda()
-                local_l_mean = local_l_mean.cuda()
-                local_l_var = local_l_var.cuda()
+                sample_batch = sample_batch.cuda(async=True)
+                local_l_mean = local_l_mean.cuda(async=True)
+                local_l_var = local_l_var.cuda(async=True)
+                batch_index = batch_index.cuda(async=True)
 
             if kl is None:
                 kl_ponderation = min(1, epoch / 400.0)
