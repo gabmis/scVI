@@ -2,10 +2,12 @@ import torch
 from torch.utils.data import DataLoader
 
 from scvi.clustering import entropy_batch_mixing
+from scvi.dataset import CortexDataset
 from scvi.imputation import imputation
 from scvi.log_likelihood import compute_log_likelihood
 from scvi.scvi import VAE
 from scvi.train import train
+from scvi.differential_expression import get_statistics
 
 
 def run_benchmarks(
@@ -73,3 +75,8 @@ def run_benchmarks(
             "Entropy batch mixing :",
             entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
         )
+
+    # - differential expression
+    # gene_dataset_train.
+    if type(gene_dataset_train) == CortexDataset:
+        get_statistics(vae, gene_dataset_train)
