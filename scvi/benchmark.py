@@ -16,6 +16,7 @@ def run_benchmarks(
     n_epochs=1000,
     learning_rate=1e-3,
     use_batches=False,
+    use_cuda=True,
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -35,8 +36,9 @@ def run_benchmarks(
         gene_dataset_train.nb_genes,
         batch=use_batches,
         n_batch=gene_dataset_train.n_batches,
+        using_cuda=use_cuda,
     )
-    if torch.cuda.is_available():
+    if vae.using_cuda:
         vae.cuda()
     train(
         vae,
@@ -63,7 +65,7 @@ def run_benchmarks(
         latent = []
         batch_indices = []
         for sample_batch, local_l_mean, local_l_var, batch_index in data_loader_train:
-            if torch.cuda.is_available():
+            if vae.using_cuda:
                 sample_batch = sample_batch.cuda(async=True)
             latent += [
                 vae.sample_from_posterior(sample_batch)

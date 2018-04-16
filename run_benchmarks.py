@@ -19,6 +19,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--nobatches", action="store_true", help="whether to ignore batches"
     )
+    parser.add_argument(
+        "--nocuda",
+        action="store_true",
+        help="whether to use cuda (will apply only if cuda is available",
+    )
 
     args = parser.parse_args()
     gene_dataset_train, gene_dataset_test = load_datasets(args.dataset)
@@ -28,6 +33,7 @@ if __name__ == "__main__":
         gene_dataset_test,
         n_epochs=args.epochs,
         use_batches=(not args.nobatches),
+        use_cuda=(not args.nocuda),
     )
     end = time.time()
     print(
