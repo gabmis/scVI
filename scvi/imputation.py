@@ -14,7 +14,7 @@ def imputation(vae, data_loader, rate=0.1):
         )
         dropout_batch[i[ix], j[ix]] *= 0
 
-        if torch.cuda.is_available():
+        if vae.using_cuda:
             batch_index = batch_index.cuda(async=True)
             dropout_batch = dropout_batch.cuda(async=True)
             sample_batch = sample_batch.cuda(async=True)

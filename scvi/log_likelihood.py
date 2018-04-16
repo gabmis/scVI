@@ -13,7 +13,7 @@ def compute_log_likelihood(vae, data_loader):
         data_loader
     ):
         sample_batched = Variable(sample_batched)
-        if torch.cuda.is_available():
+        if vae.using_cuda:
             sample_batched = sample_batched.cuda()
             batch_index = batch_index.cuda()
         px_scale, px_r, px_rate, px_dropout, qz_m, qz_v, ql_m, ql_v = vae(

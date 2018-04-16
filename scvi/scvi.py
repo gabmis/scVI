@@ -26,6 +26,7 @@ class VAE(nn.Module):
         reconstruction_loss="zinb",
         batch=False,
         n_batch=0,
+        using_cuda=True,
     ):
         super(VAE, self).__init__()
 
@@ -41,6 +42,7 @@ class VAE(nn.Module):
         self.kl_scale = kl_scale
         self.reconstruction_loss = reconstruction_loss
         self.n_batch = n_batch
+        self.using_cuda = using_cuda and torch.cuda.is_available()
         # boolean indicating whether we want to take the batch indexes into account
         self.batch = batch
 
@@ -53,6 +55,7 @@ class VAE(nn.Module):
             n_latent=n_latent,
             n_layers=n_layers,
             dropout_rate=dropout_rate,
+            using_cuda=self.using_cuda,
         )
         self.decoder = Decoder(
             n_input,
@@ -62,6 +65,7 @@ class VAE(nn.Module):
             dropout_rate=dropout_rate,
             batch=batch,
             n_batch=n_batch,
+            using_cuda=self.using_cuda,
         )
 
     def sample_from_posterior(self, x):
@@ -149,7 +153,13 @@ class VAE(nn.Module):
 # Encoder
 class Encoder(nn.Module):
     def __init__(
-        self, n_input, n_hidden=128, n_latent=10, n_layers=1, dropout_rate=0.1
+        self,
+        n_input,
+        n_hidden=128,
+        n_latent=10,
+        n_layers=1,
+        dropout_rate=0.1,
+        using_cuda=True,
     ):
         super(Encoder, self).__init__()
 
@@ -158,7 +168,7 @@ class Encoder(nn.Module):
         self.n_hidden = n_hidden
         self.n_input = n_input
         self.n_layers = n_layers
-
+        self.using_cuda = using_cuda and torch.cuda.is_available()
         # Encoding q(z/x)
         # There is always a first layer
         self.first_layer = nn.Sequential(
@@ -229,6 +239,7 @@ class Decoder(nn.Module):
         dropout_rate=0.1,
         batch=False,
         n_batch=0,
+        using_cuda=True,
     ):
         super(Decoder, self).__init__()
 
@@ -239,6 +250,7 @@ class Decoder(nn.Module):
         self.n_layers = n_layers
         self.n_batch = n_batch
         self.batch = batch
+        self.using_cuda = using_cuda and torch.cuda.is_available()
 
         if batch:
             self.n_hidden_real = n_hidden + n_batch
@@ -291,7 +303,7 @@ class Decoder(nn.Module):
         # The decoder returns values for the parameters of the ZINB distribution
 
         def one_hot(batch_index, n_batch, dtype):
-            if batch_index.is_cuda:
+            if self.using_cuda:
                 batch_index = batch_index.type(torch.cuda.LongTensor)
             else:
                 batch_index = batch_index.type(torch.LongTensor)
