@@ -13,7 +13,7 @@ class GeneExpressionDataset(Dataset):
     - local library size normalization (mean, var) per batch
     """
 
-    def __init__(self, Xs):
+    def __init__(self, Xs, list_labels=None):
         # Args:
         # Xs: a list of numpy tensors with .shape[1] identical (total_size*nb_genes)
         self.nb_genes = Xs[0].shape[1]
@@ -42,6 +42,16 @@ class GeneExpressionDataset(Dataset):
         self.X = torch.cat(new_Xs, dim=0)
         self.total_size = self.X.size(0)
 
+        all_labels = []
+        if list_labels is not None:
+            for labels in list_labels:
+                all_labels += [torch.LongTensor(labels.reshape(-1, 1))]
+            self.all_labels = torch.cat(all_labels, dim=0)
+        else:
+            self.all_labels = torch.zeros_like(
+                self.batch_indices
+            )  # We might want default label values
+
     def get_all(self):
         return self.X
 
@@ -54,6 +64,7 @@ class GeneExpressionDataset(Dataset):
             self.local_means[idx],
             self.local_vars[idx],
             self.batch_indices[idx],
+            self.all_labels[idx],
         )
 
     @staticmethod
