@@ -17,6 +17,7 @@ def run_benchmarks(
     learning_rate=1e-3,
     use_batches=False,
     use_cuda=True,
+    show_batch_mixing=False,
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -78,9 +79,9 @@ def run_benchmarks(
                 "Entropy batch mixing :",
                 entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
             )
-
-        show_t_sne(
-            latent.data.cpu().numpy(),
-            np.array([batch[0] for batch in batch_indices.numpy()]),
-            "Batch mixing t_SNE plot",
-        )
+        if show_batch_mixing:
+            show_t_sne(
+                latent.data.cpu().numpy(),
+                np.array([batch[0] for batch in batch_indices.numpy()]),
+                "Batch mixing t_SNE plot",
+            )
