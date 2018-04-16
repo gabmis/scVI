@@ -1,6 +1,8 @@
 import torch
 from torch.autograd import Variable
 
+from scvi.log_likelihood import compute_log_likelihood
+
 
 def train(
     vae, data_loader_train, data_loader_test, n_epochs=20, learning_rate=0.001, kl=None
@@ -47,8 +49,8 @@ def train(
             # Simply printing the results
         if epoch % 10 == 0:
             vae.eval()
-            log_likelihood_train = vae.compute_log_likelihood(data_loader_train)
-            log_likelihood_test = vae.compute_log_likelihood(data_loader_test)
+            log_likelihood_train = compute_log_likelihood(vae, data_loader_train)
+            log_likelihood_test = compute_log_likelihood(vae, data_loader_test)
             print(
                 "Epoch[%d/%d], LL-Train %.4f, LL-Test %.4f, Total Loss: %.4f, "
                 % (
