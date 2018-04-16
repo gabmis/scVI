@@ -14,7 +14,7 @@ def train(
     for epoch in range(n_epochs):
         for (
             i_batch,
-            (sample_batch, local_l_mean, local_l_var, batch_index),
+            (sample_batch, local_l_mean, local_l_var, batch_index, _),
         ) in enumerate(data_loader_train):
 
             sample_batch = Variable(sample_batch)
