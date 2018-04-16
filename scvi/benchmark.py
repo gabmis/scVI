@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
+import numpy as np
 
 from scvi.clustering import entropy_batch_mixing
 from scvi.imputation import imputation
@@ -80,6 +81,6 @@ def run_benchmarks(
 
         show_t_sne(
             latent.data.cpu().numpy(),
-            [batch_indices.numpy()[0] for batch in batch_indices.numpy()],
+            np.array([batch[0] for batch in batch_indices.numpy()]),
             "Batch mixing t_SNE plot",
         )
