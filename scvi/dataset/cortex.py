@@ -78,8 +78,9 @@ class CortexDataset(GeneExpressionDataset):
         np.save(self.save_path + "labels_test.npy", c_test)
 
     def download_and_preprocess(self):
-        if not os.path.exists(self.save_path + self.data_filename) and os.path.exists(
-            self.save_path + self.labels_filename
+        if not (
+            os.path.exists(self.save_path + self.data_filename)
+            and os.path.exists(self.save_path + self.labels_filename)
         ):
             if not os.path.exists(self.save_path + self.download_name):
                 self.download()
