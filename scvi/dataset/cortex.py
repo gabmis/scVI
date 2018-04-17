@@ -1,7 +1,7 @@
 import csv
 import os
 import urllib.request
-
+import scipy.sparse as sp_sparse
 import numpy as np
 
 from .dataset import GeneExpressionDataset
@@ -16,7 +16,7 @@ class CortexDataset(GeneExpressionDataset):
         self.labels_filename = "labels_%s.npy" % type
         self.download_and_preprocess()
         super(CortexDataset, self).__init__(
-            [np.load(self.save_path + self.data_filename)],
+            [sp_sparse.csr_matrix(np.load(self.save_path + self.data_filename))],
             [np.load(self.save_path + self.labels_filename)],
         )
 
