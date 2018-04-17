@@ -34,6 +34,7 @@ if __name__ == "__main__":
         n_epochs=args.epochs,
         use_batches=(not args.nobatches),
         use_cuda=(not args.nocuda),
+        show_batch_mixing=True,
     )
     end = time.time()
     print(
