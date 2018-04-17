@@ -87,7 +87,6 @@ class BrainLargeDataset(GeneExpressionDataset):
         super(BrainLargeDataset, self).__init__(
             [h5_object.matrix.transpose().tocsr(copy=False)], sparse=True
         )
-        # super(BrainLargeDataset, self).__init__([h5_object.matrix.transpose()], sparse=True)
 
     def download(self):
 
