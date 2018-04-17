@@ -87,4 +87,6 @@ def run_benchmarks(
     # - differential expression
     #
     if type(gene_dataset_train) == CortexDataset:
-        get_statistics(vae, data_loader_train)
+        get_statistics(
+            vae, data_loader_train, M_sampling=1, M_permutation=1
+        )  # 200 - 100000
