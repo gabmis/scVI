@@ -1,8 +1,5 @@
 from sklearn.manifold import TSNE
-import matplotlib
 import matplotlib.pyplot as plt
-
-matplotlib.use("agg")
 
 
 def show_t_sne(

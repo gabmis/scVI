@@ -114,7 +114,6 @@ class VAE(nn.Module):
     def loss(
         self, sampled_batch, local_l_mean, local_l_var, kl_ponderation, batch_index=None
     ):
-
         px_scale, px_r, px_rate, px_dropout, qz_m, qz_v, ql_m, ql_v = self(
             sampled_batch, batch_index
         )

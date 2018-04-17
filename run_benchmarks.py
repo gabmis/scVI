@@ -14,7 +14,7 @@ if __name__ == "__main__":
         "--epochs", type=int, default=250, help="how many times to process the dataset"
     )
     parser.add_argument(
-        "--dataset", type=str, default="cortex", help="which dataset to process"
+        "--dataset", type=str, default="brain_large", help="which dataset to process"
     )
     parser.add_argument(
         "--nobatches", action="store_true", help="whether to ignore batches"
