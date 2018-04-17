@@ -3,6 +3,8 @@ from torch.utils.data import DataLoader
 import numpy as np
 
 from scvi.clustering import entropy_batch_mixing
+from scvi.dataset import CortexDataset
+from scvi.differential_expression import get_statistics
 from scvi.imputation import imputation
 from scvi.log_likelihood import compute_log_likelihood
 from scvi.scvi import VAE
@@ -80,14 +82,22 @@ def run_benchmarks(
             batch_indices += [batch_index]
         latent = torch.cat(latent)
         batch_indices = torch.cat(batch_indices)
-        if gene_dataset_train.n_batches == 2:
-            print(
-                "Entropy batch mixing :",
-                entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
-            )
-        if show_batch_mixing:
-            show_t_sne(
-                latent.data.cpu().numpy(),
-                np.array([batch[0] for batch in batch_indices.numpy()]),
-                "Batch mixing t_SNE plot",
-            )
+
+    if gene_dataset_train.n_batches == 2:
+        print(
+            "Entropy batch mixing :",
+            entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
+        )
+    if show_batch_mixing:
+        show_t_sne(
+            latent.data.cpu().numpy(),
+            np.array([batch[0] for batch in batch_indices.numpy()]),
+            "Batch mixing t_SNE plot",
+        )
+
+    # - differential expression
+    #
+    if type(gene_dataset_train) == CortexDataset:
+        get_statistics(
+            vae, data_loader_train, M_sampling=1, M_permutation=1
+        )  # 200 - 100000
