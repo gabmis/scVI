@@ -1,11 +1,13 @@
 import torch
 from torch.utils.data import DataLoader
+import numpy as np
 
 from scvi.clustering import entropy_batch_mixing
 from scvi.imputation import imputation
 from scvi.log_likelihood import compute_log_likelihood
 from scvi.scvi import VAE
 from scvi.train import train
+from scvi.visualization import show_t_sne
 
 
 def run_benchmarks(
@@ -15,6 +17,7 @@ def run_benchmarks(
     learning_rate=1e-3,
     use_batches=False,
     use_cuda=True,
+    show_batch_mixing=False,
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -59,7 +62,7 @@ def run_benchmarks(
     print("Imputation score on train (MAE) is:", imputation_train)
 
     # - batch mixing
-    if gene_dataset_train.n_batches == 2:
+    if gene_dataset_train.n_batches >= 2:
         latent = []
         batch_indices = []
         for (
@@ -77,7 +80,14 @@ def run_benchmarks(
             batch_indices += [batch_index]
         latent = torch.cat(latent)
         batch_indices = torch.cat(batch_indices)
-        print(
-            "Entropy batch mixing :",
-            entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
-        )
+        if gene_dataset_train.n_batches == 2:
+            print(
+                "Entropy batch mixing :",
+                entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
+            )
+        if show_batch_mixing:
+            show_t_sne(
+                latent.data.cpu().numpy(),
+                np.array([batch[0] for batch in batch_indices.numpy()]),
+                "Batch mixing t_SNE plot",
+            )
