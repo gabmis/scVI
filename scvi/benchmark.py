@@ -19,7 +19,7 @@ def run_benchmarks(
     learning_rate=1e-3,
     use_batches=False,
     use_cuda=True,
-    show_batch_mixing=False,
+    show_batch_mixing=True,
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -30,10 +30,18 @@ def run_benchmarks(
     # - cluster scores
 
     data_loader_train = DataLoader(
-        gene_dataset_train, batch_size=128, shuffle=True, num_workers=1, pin_memory=True
+        gene_dataset_train,
+        batch_size=128,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=use_cuda,
     )
     data_loader_test = DataLoader(
-        gene_dataset_test, batch_size=128, shuffle=True, num_workers=1, pin_memory=True
+        gene_dataset_test,
+        batch_size=128,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=use_cuda,
     )
     vae = VAE(
         gene_dataset_train.nb_genes,
@@ -88,12 +96,12 @@ def run_benchmarks(
             "Entropy batch mixing :",
             entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
         )
-    if show_batch_mixing:
-        show_t_sne(
-            latent.data.cpu().numpy(),
-            np.array([batch[0] for batch in batch_indices.numpy()]),
-            "Batch mixing t_SNE plot",
-        )
+        if show_batch_mixing:
+            show_t_sne(
+                latent.data.cpu().numpy(),
+                np.array([batch[0] for batch in batch_indices.numpy()]),
+                "Batch mixing t_SNE plot",
+            )
 
     # - differential expression
     #
