@@ -77,7 +77,7 @@ def run_benchmarks(
             if vae.using_cuda:
                 sample_batch = sample_batch.cuda(async=True)
             latent += [
-                vae.sample_from_posterior(sample_batch)
+                vae.sample_from_posterior_z(sample_batch)
             ]  # Just run a forward pass on all the data
             batch_indices += [batch_index]
         latent = torch.cat(latent)
