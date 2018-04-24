@@ -27,6 +27,7 @@ class VAE(nn.Module):
         batch=False,
         n_batch=0,
         using_cuda=True,
+        n_labels=None,
     ):
         super(VAE, self).__init__()
 
@@ -76,23 +77,23 @@ class VAE(nn.Module):
             using_cuda=self.using_cuda,
         )
 
-    def sample_from_posterior_z(self, x):
+    def sample_from_posterior_z(self, x, y=None):
         # Here we compute as little as possible to have q(z|x)
         qz_m, qz_v, z = self.z_encoder.forward(x)
         return z
 
-    def sample_from_posterior_l(self, x):
+    def sample_from_posterior_l(self, x, y=None):
         # Here we compute as little as possible to have q(z|x)
         ql_m, ql_v, library = self.l_encoder.forward(x)
         return library
 
-    def get_sample_scale(self, x, batch_index=None):
+    def get_sample_scale(self, x, y=None, batch_index=None):
         z = self.sample_from_posterior_z(x)
         px = self.decoder.px_decoder_batch(z, batch_index)
         px_scale = self.decoder.px_scale_decoder(px)
         return px_scale
 
-    def get_sample_rate(self, x, batch_index=None):
+    def get_sample_rate(self, x, y=None, batch_index=None):
         z = self.sample_from_posterior_z(x)
         library = self.sample_from_posterior_l(x)
         px = self.decoder.px_decoder_batch(z, batch_index)
@@ -102,7 +103,7 @@ class VAE(nn.Module):
         return self.px_scale_decoder(z)
 
     def forward(
-        self, x, local_l_mean, local_l_var, batch_index=None
+        self, x, local_l_mean, local_l_var, batch_index=None, y=None
     ):  # same signature as loss
         # Parameters for z latent distribution
         if self.batch and batch_index is None:

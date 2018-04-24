@@ -1,3 +1,5 @@
+import random
+
 import torch
 from torch.autograd import Variable
 
@@ -13,7 +15,6 @@ def train(
     kl=None,
     early_stopping_criterion=(20, 0.01),
 ):
-
     # Defining the optimizer
     optimizer = torch.optim.Adam(vae.parameters(), lr=learning_rate, eps=0.01)
 
@@ -35,13 +36,13 @@ def train(
             sample_batch = Variable(sample_batch)
             local_l_mean = Variable(local_l_mean)
             local_l_var = Variable(local_l_var)
-
+            labels = labels if random.random() < 0.5 else None
             if vae.using_cuda:
                 sample_batch = sample_batch.cuda(async=True)
                 local_l_mean = local_l_mean.cuda(async=True)
                 local_l_var = local_l_var.cuda(async=True)
                 batch_index = batch_index.cuda(async=True)
-                labels = labels.cuda(async=True)
+                # labels = labels.cuda(async=True)
 
             if kl is None:
                 kl_ponderation = min(1, epoch / 400.0)

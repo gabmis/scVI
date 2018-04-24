@@ -38,6 +38,7 @@ class GeneExpressionDataset(Dataset):
         self.batch_indices = batch_indices
         self.X = X
         self.labels = labels
+        self.n_labels = len(np.unique(labels.numpy()))
 
         if gene_names is not None:
             self.gene_names = np.char.upper(

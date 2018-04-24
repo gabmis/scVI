@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 from scvi.clustering import entropy_batch_mixing
@@ -8,9 +7,8 @@ from scvi.dataset import CortexDataset
 from scvi.differential_expression import get_statistics
 from scvi.imputation import imputation
 from scvi.log_likelihood import compute_log_likelihood
-from scvi.vaec import VAEC
 from scvi.train import train
-from scvi.utils import one_hot
+from scvi.vaec import VAEC, VAE
 from scvi.visualization import show_t_sne
 
 
@@ -22,6 +20,7 @@ def run_benchmarks(
     use_batches=False,
     use_cuda=True,
     show_batch_mixing=True,
+    semi_supervised=False,
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -45,12 +44,13 @@ def run_benchmarks(
         num_workers=4,
         pin_memory=use_cuda,
     )
-    vae = VAEC(
+    cls = VAEC if semi_supervised else VAE
+    vae = cls(
         gene_dataset_train.nb_genes,
         batch=use_batches,
         n_batch=gene_dataset_train.n_batches,
         using_cuda=use_cuda,
-        n_labels=7,
+        n_labels=gene_dataset_train.n_labels,
     )
     if vae.using_cuda:
         vae.cuda()
@@ -88,15 +88,8 @@ def run_benchmarks(
             sample_batch = sample_batch.type(torch.FloatTensor)
             if vae.using_cuda:
                 sample_batch = sample_batch.cuda(async=True)
-            x = torch.cat(
-                (
-                    Variable(sample_batch),
-                    one_hot(labels, vae.n_labels, sample_batch.type()),
-                ),
-                1,
-            )
             latent += [
-                vae.sample_from_posterior_z(x)
+                vae.sample_from_posterior_z(sample_batch, y=labels)
             ]  # Just run a forward pass on all the data
             batch_indices += [batch_index]
         latent = torch.cat(latent)
