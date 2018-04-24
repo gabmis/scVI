@@ -30,10 +30,10 @@ def run_benchmarks(
     # - cluster scores
 
     data_loader_train = DataLoader(
-        gene_dataset_train, batch_size=16, shuffle=True, num_workers=1, pin_memory=True
+        gene_dataset_train, batch_size=128, shuffle=True, num_workers=1, pin_memory=True
     )
     data_loader_test = DataLoader(
-        gene_dataset_test, batch_size=16, shuffle=True, num_workers=1, pin_memory=True
+        gene_dataset_test, batch_size=128, shuffle=True, num_workers=1, pin_memory=True
     )
     vae = VAE(
         gene_dataset_train.nb_genes,
