@@ -82,6 +82,7 @@ def run_benchmarks(
             batch_index,
             _,
         ) in data_loader_train:
+            sample_batch = sample_batch.type(torch.FloatTensor)
             if vae.using_cuda:
                 sample_batch = sample_batch.cuda(async=True)
             latent += [
