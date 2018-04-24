@@ -3,13 +3,15 @@ import collections
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from scvi.scvi import VAE
+
 from scvi.utils import enumerate_discrete, one_hot
+from scvi.vae import VAE
 
 
-class DGM(VAE):
+# VAE model - for classification: VAEC
+class VAEC(VAE):
     def __init__(self, n_input, n_labels=7, y_prior=None, **kargs):
-        super(DGM, self).__init__(n_input=n_input + n_labels, **kargs)
+        super(VAEC, self).__init__(n_input=n_input + n_labels, **kargs)
         self.n_labels = n_labels
         self.n_input = n_input
 
@@ -47,7 +49,7 @@ class DGM(VAE):
         else:
             ys = one_hot(ys, self.n_labels, xs.data.type())
 
-        reconst_loss, kl_divergence = super(DGM, self).forward(
+        reconst_loss, kl_divergence = super(VAEC, self).forward(
             torch.cat((xs, ys), 1), local_l_mean, local_l_var, batch_index=batch_index
         )
 

@@ -22,12 +22,13 @@ def get_statistics(
     px_scales = []
     all_labels = []
     for sample_batch, _, _, batch_index, labels in data_loader:
+        sample_batch = sample_batch.type(torch.FloatTensor)
         sample_batch = sample_batch.repeat(1, M_sampling).view(
             -1, sample_batch.size(1)
         )  # sample_batch.repeat(1, sample_batch)
         batch_index = batch_index.repeat(1, M_sampling).view(-1, 1)
         labels = labels.repeat(1, M_sampling).view(-1, 1)
-        if torch.cuda.is_available():
+        if vae.using_cuda:
             sample_batch = sample_batch.cuda(async=True)
             batch_index = batch_index.cuda(async=True)
             labels = labels.cuda(async=True)
