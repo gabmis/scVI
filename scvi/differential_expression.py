@@ -1,5 +1,8 @@
 import numpy as np
 import torch
+from torch.autograd import Variable
+
+from scvi.utils import one_hot
 
 
 def get_statistics(
@@ -28,7 +31,14 @@ def get_statistics(
             sample_batch = sample_batch.cuda(async=True)
             batch_index = batch_index.cuda(async=True)
             labels = labels.cuda(async=True)
-        px_scales += [vae.get_sample_scale(sample_batch, batch_index)]
+        x = torch.cat(
+            (
+                Variable(sample_batch),
+                one_hot(labels, vae.n_labels, sample_batch.type()),
+            ),
+            1,
+        )
+        px_scales += [vae.get_sample_scale(x, batch_index)]
         all_labels += [labels]
 
     # #TODO: Cell types are not yet saved to the dataset object (should it be saved as .npy/.txt file then loaded ?)
