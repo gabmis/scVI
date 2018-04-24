@@ -19,6 +19,7 @@ def get_statistics(
     px_scales = []
     all_labels = []
     for sample_batch, _, _, batch_index, labels in data_loader:
+        sample_batch = sample_batch.type(torch.FloatTensor)
         sample_batch = sample_batch.repeat(1, M_sampling).view(
             -1, sample_batch.size(1)
         )  # sample_batch.repeat(1, sample_batch)

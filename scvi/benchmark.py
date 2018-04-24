@@ -74,6 +74,7 @@ def run_benchmarks(
             batch_index,
             _,
         ) in data_loader_train:
+            sample_batch = sample_batch.type(torch.FloatTensor)
             if vae.using_cuda:
                 sample_batch = sample_batch.cuda(async=True)
             latent += [
@@ -88,12 +89,12 @@ def run_benchmarks(
             "Entropy batch mixing :",
             entropy_batch_mixing(latent.data.cpu().numpy(), batch_indices.numpy()),
         )
-    if show_batch_mixing:
-        show_t_sne(
-            latent.data.cpu().numpy(),
-            np.array([batch[0] for batch in batch_indices.numpy()]),
-            "Batch mixing t_SNE plot",
-        )
+        if show_batch_mixing:
+            show_t_sne(
+                latent.data.cpu().numpy(),
+                np.array([batch[0] for batch in batch_indices.numpy()]),
+                "Batch mixing t_SNE plot",
+            )
 
     # - differential expression
     #

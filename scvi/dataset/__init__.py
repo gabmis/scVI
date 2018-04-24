@@ -22,7 +22,7 @@ def load_datasets(dataset_name):
             CortexDataset(type="test"),
         )
     elif dataset_name == "brain_large":
-        gene_dataset = BrainLargeDataset()
+        gene_dataset = BrainLargeDataset(subsample_size=None)
         gene_dataset_train, gene_dataset_test = (
             gene_dataset,
             gene_dataset,
