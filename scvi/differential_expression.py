@@ -18,24 +18,23 @@ def get_statistics(
     # Compute sample rate for the whole dataset ?
     px_scales = []
     all_labels = []
-    for sample_batch, _, _, batch_index, labels in data_loader:
-        sample_batch = sample_batch.type(torch.FloatTensor)
-        sample_batch = sample_batch.repeat(1, M_sampling).view(
-            -1, sample_batch.size(1)
-        )  # sample_batch.repeat(1, sample_batch)
-        batch_index = batch_index.repeat(1, M_sampling).view(-1, 1)
-        labels = labels.repeat(1, M_sampling).view(-1, 1)
-        if vae.using_cuda:
-            sample_batch = sample_batch.cuda(async=True)
-            batch_index = batch_index.cuda(async=True)
-            labels = labels.cuda(async=True)
-        px_scales += [
-            vae.get_sample_scale(sample_batch, y=labels, batch_index=batch_index)
-        ]
-        all_labels += [labels]
+    with torch.no_grad():
+        for sample_batch, _, _, batch_index, labels in data_loader:
+            sample_batch = sample_batch.type(torch.FloatTensor)
+            sample_batch = sample_batch.repeat(1, M_sampling).view(
+                -1, sample_batch.size(1)
+            )
+            batch_index = batch_index.repeat(1, M_sampling).view(-1, 1)
+            labels = labels.repeat(1, M_sampling).view(-1, 1)
+            if vae.using_cuda:
+                sample_batch = sample_batch.cuda(async=True)
+                batch_index = batch_index.cuda(async=True)
+                labels = labels.cuda(async=True)
+            px_scales += [
+                vae.get_sample_scale(sample_batch, y=labels, batch_index=batch_index)
+            ]
+            all_labels += [labels]
 
-    # #TODO: Cell types are not yet saved to the dataset object (should it be saved as .npy/.txt file then loaded ?)
-    # Or maybe we can take advantage of the h5 format to save such fields.
     cell_types = np.array(
         [
             "astrocytes_ependymal",
@@ -63,13 +62,13 @@ def get_statistics(
         px_scale[all_labels.view(-1) == couple_celltypes[0]]
         .view(-1, px_scale.size(1))
         .cpu()
-        .data.numpy()
+        .numpy()
     )
     sample_rate_b = (
         px_scale[all_labels.view(-1) == couple_celltypes[1]]
         .view(-1, px_scale.size(1))
         .cpu()
-        .data.numpy()
+        .numpy()
     )
 
     # agregate dataset
