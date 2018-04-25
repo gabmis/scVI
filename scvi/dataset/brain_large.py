@@ -4,6 +4,7 @@ import time
 import numpy as np
 import scipy.sparse as sp_sparse
 import tables
+from sklearn.preprocessing import StandardScaler
 
 from .dataset import GeneExpressionDataset
 
@@ -37,6 +38,12 @@ def subsample_barcodes(gbm, barcode_indices, unit_test=False):
     )
 
 
+def subsample_genes(gbm, genes_indices, unit_test=False):
+    gene_ids = gbm.gene_ids[genes_indices] if not unit_test else gbm.gene_ids
+    gene_names = gbm.gene_names[genes_indices] if not unit_test else gbm.gene_names
+    return GeneBCMatrix(gene_ids, gene_names, gbm.barcodes, gbm.matrix[:, :])
+
+
 def get_expression(gbm, gene_name):
     gene_indices = np.where(gbm.gene_names == gene_name)[0]
     if len(gene_indices) == 0:
@@ -62,16 +69,11 @@ class BrainLargeDataset(GeneExpressionDataset):
         else:
             self.download_name = "../tests/data/genomics_subsampled.h5"
 
-        if subsample_size is None:
-            self.final_name = self.download_name
-        else:
-            self.final_name = "genomics_subsampled_%d.h5" % subsample_size
-
         self.genome = "mm10"
         h5_object = self.download_and_preprocess()
         super(BrainLargeDataset, self).__init__(
             *GeneExpressionDataset.get_attributes_from_matrix(
-                h5_object.matrix.transpose().tocsr(copy=False)
+                h5_object.matrix.transpose()
             )
         )
 
@@ -84,16 +86,25 @@ class BrainLargeDataset(GeneExpressionDataset):
 
         gene_bc_matrix = get_matrix_from_h5(filtered_matrix_h5, self.genome)
 
+        # Subsample 720 genes with highest variance
+        std_scaler = StandardScaler(with_mean=False)
+        std_scaler.fit(gene_bc_matrix.matrix.transpose().astype(np.float64))
+        subset_genes = np.argsort(std_scaler.var_)[::-1][:720]
+        subsampled_matrix = subsample_genes(
+            gene_bc_matrix, subset_genes, unit_test=self.unit_test
+        )
+
+        # Subsample barcodes
         subsample_bcs = self.subsample_size
-        subset = np.sort(
+        subset_barcodes = np.sort(
             np.random.choice(
-                gene_bc_matrix.matrix.shape[1],
+                subsampled_matrix.matrix.shape[1],
                 size=subsample_bcs,
                 replace=self.unit_test,
             )
         )
         subsampled_matrix = subsample_barcodes(
-            gene_bc_matrix, subset, unit_test=self.unit_test
+            subsampled_matrix, subset_barcodes, unit_test=self.unit_test
         )
 
         toc = time.time()
