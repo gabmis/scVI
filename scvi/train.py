@@ -13,7 +13,6 @@ def train(
     kl=None,
     early_stopping_criterion=(20, 0.01),
 ):
-
     # Defining the optimizer
     optimizer = torch.optim.Adam(vae.parameters(), lr=learning_rate, eps=0.01)
 
@@ -102,9 +101,7 @@ def train(
         if epoch % 10 == 0:
             vae.eval()
             # No need to compute it twice
-            log_likelihood_train = (
-                total_current_reconst.data[0] + total_current_kl.data[0]
-            )
+            log_likelihood_train = compute_log_likelihood(vae, data_loader_train)
             log_likelihood_test = compute_log_likelihood(vae, data_loader_test)
             print(
                 "Epoch[%d/%d], LL-Train %.4f, LL-Test %.4f, Total Loss: %.4f, "
