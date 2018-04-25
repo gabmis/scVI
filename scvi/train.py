@@ -39,7 +39,6 @@ def train(
                 local_l_mean = local_l_mean.cuda(async=True)
                 local_l_var = local_l_var.cuda(async=True)
                 batch_index = batch_index.cuda(async=True)
-                # labels = labels.cuda(async=True)
 
             if kl is None:
                 kl_ponderation = min(1, epoch / 400.0)
