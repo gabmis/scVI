@@ -35,7 +35,6 @@ def run_benchmarks(
     data_loader_train = DataLoader(
         gene_dataset,
         batch_size=128,
-        num_workers=4,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[:tt_split]),
     )
