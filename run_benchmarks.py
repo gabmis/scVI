@@ -26,11 +26,10 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    gene_dataset_train, gene_dataset_test = load_datasets(args.dataset)
+    gene_dataset = load_datasets(args.dataset)
     start = time.time()
     run_benchmarks(
-        gene_dataset_train,
-        gene_dataset_test,
+        gene_dataset,
         n_epochs=args.epochs,
         use_batches=(not args.nobatches),
         use_cuda=(not args.nocuda),

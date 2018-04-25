@@ -60,13 +60,13 @@ def get_statistics(
     # Here instead of A, B = 200, 400: we do on whole dataset then select cells
     all_labels = torch.cat(all_labels)
     sample_rate_a = (
-        px_scale[all_labels == couple_celltypes[0]]
+        px_scale[all_labels.view(-1) == couple_celltypes[0]]
         .view(-1, px_scale.size(1))
         .cpu()
         .data.numpy()
     )
     sample_rate_b = (
-        px_scale[all_labels == couple_celltypes[1]]
+        px_scale[all_labels.view(-1) == couple_celltypes[1]]
         .view(-1, px_scale.size(1))
         .cpu()
         .data.numpy()
