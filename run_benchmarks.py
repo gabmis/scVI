@@ -24,7 +24,6 @@ if __name__ == "__main__":
         action="store_true",
         help="whether to use cuda (will apply only if cuda is available",
     )
-
     args = parser.parse_args()
     gene_dataset = load_datasets(args.dataset)
     start = time.time()
