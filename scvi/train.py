@@ -3,8 +3,9 @@ import random
 import numpy as np
 import torch
 
+from scvi.models.stats import Stats
 from scvi.log_likelihood import compute_log_likelihood
-from scvi.utils import to_cuda
+from scvi.utils import to_cuda, compute_accuracy
 
 
 def train(
@@ -15,6 +16,8 @@ def train(
     learning_rate=0.001,
     kl=None,
     early_stopping_criterion=(20, 0.01),
+    verbose=True,
+    verbose_frequency=5,
 ):
     # Defining the optimizer
     optimizer = torch.optim.Adam(vae.parameters(), lr=learning_rate, eps=0.01)
@@ -23,6 +26,9 @@ def train(
     (patience, threshold) = (early_stopping_criterion[0], early_stopping_criterion[1])
     current_performances_kl = np.ones((patience))
     current_performances_reconst = np.ones((patience))
+
+    # Getting access to the stats during training
+    stats = Stats(verbose, verbose_frequency)
 
     # Training the model
     for epoch in range(n_epochs):
@@ -102,24 +108,9 @@ def train(
                     reconst_relative_improvement,
                 )
             )
-
+            return stats
             break
 
-            # Simply printing the results
-        if epoch % 10 == 0:
-            vae.eval()
-            # No need to compute it twice
-            log_likelihood_train = compute_log_likelihood(vae, data_loader_train)
-            log_likelihood_test = compute_log_likelihood(vae, data_loader_test)
-            real_loss = current_performances_reconst[-1] + current_performances_kl[-1]
-            print(
-                "Epoch[%d/%d], LL-Train %.4f, LL-Test %.4f, Total Loss: %.4f"
-                % (
-                    epoch + 1,
-                    n_epochs,
-                    log_likelihood_train,
-                    log_likelihood_test,
-                    real_loss,
-                )
-            )
-            vae.train()
+        stats.callback(vae, data_loader_train, data_loader_test)
+        stats.n_epoch += 1
+    return stats

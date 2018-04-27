@@ -8,7 +8,7 @@ from scvi.dataset import CortexDataset
 from scvi.differential_expression import get_statistics
 from scvi.imputation import imputation
 from scvi.log_likelihood import compute_log_likelihood
-from scvi.models import VAEC, VAE
+from scvi.models import VAE
 from scvi.train import train
 from scvi.utils import to_cuda
 from scvi.visualization import show_t_sne
@@ -18,12 +18,12 @@ torch.set_grad_enabled(False)
 
 def run_benchmarks(
     gene_dataset,
+    model=VAE,
     n_epochs=1000,
     learning_rate=1e-3,
     use_batches=False,
     use_cuda=True,
     show_batch_mixing=True,
-    semi_supervised=False,
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -47,8 +47,7 @@ def run_benchmarks(
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[tt_split:]),
     )
-    cls = VAEC if semi_supervised else VAE
-    vae = cls(
+    vae = model(
         gene_dataset.nb_genes,
         batch=use_batches,
         n_batch=gene_dataset.n_batches,
