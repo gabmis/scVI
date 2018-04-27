@@ -4,8 +4,7 @@ import numpy as np
 import torch
 
 from scvi.models.stats import Stats
-from scvi.log_likelihood import compute_log_likelihood
-from scvi.utils import to_cuda, compute_accuracy
+from scvi.utils import to_cuda
 
 
 def train(
