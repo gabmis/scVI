@@ -12,7 +12,6 @@ class VAEC(VAE):
             n_input=n_input + n_labels, n_layers=n_layers, **kargs
         )
         self.n_labels = n_labels
-        self.n_input = n_input
 
         self.y_prior = (
             y_prior
@@ -20,7 +19,7 @@ class VAEC(VAE):
             else (1 / self.n_labels) * torch.ones(self.n_labels)
         )
         self.classifier = Classifier(
-            self.n_input,
+            n_input,
             self.n_hidden,
             self.n_labels,
             n_layers=n_layers,

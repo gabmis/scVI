@@ -64,9 +64,9 @@ class VAE(nn.Module):
             dropout_rate=dropout_rate,
         )
         self.decoder = DecoderSCVI(
+            n_latent,
             n_input,
             n_hidden=n_hidden,
-            n_latent=n_latent,
             n_layers=n_layers,
             dropout_rate=dropout_rate,
             batch=batch,
