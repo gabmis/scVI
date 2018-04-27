@@ -65,8 +65,10 @@ def run_benchmarks(
             learning_rate=learning_rate,
         )
 
-    print("Log-likelihood Train:", stats.history["LL_train"][-1])
-    print("Log-likelihood Test:", stats.history["LL_test"][-1])
+    if stats.n_epoch > 0:
+        print(stats.history["LL_train"])
+        print("Log-likelihood Train:", stats.history["LL_train"][-1])
+        print("Log-likelihood Test:", stats.history["LL_test"][-1])
 
     # - imputation
 
