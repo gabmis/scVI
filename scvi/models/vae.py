@@ -21,33 +21,21 @@ class VAE(nn.Module):
         dropout_rate=0.1,
         dispersion="gene",
         log_variational=True,
-        kl_scale=1,
         reconstruction_loss="zinb",
-        batch=False,
         n_batch=0,
-        using_cuda=True,
-        n_labels=None,
+        n_labels=0,
+        using_cuda=False,
     ):
         super(VAE, self).__init__()
-
-        self.dropout_rate = dropout_rate
-        self.n_latent = n_latent
-        self.n_hidden = n_hidden
-        self.n_input = n_input
-        self.n_layers = n_layers
-        self.library = 0
-        self.z = 0
+        self.using_cuda = using_cuda
         self.dispersion = dispersion
         self.log_variational = log_variational
-        self.kl_scale = kl_scale
         self.reconstruction_loss = reconstruction_loss
-        self.n_batch = n_batch
-        self.using_cuda = using_cuda and torch.cuda.is_available()
-        # boolean indicating whether we want to take the batch indexes into account
-        self.batch = batch
+        # Automatically desactivate if useless
+        self.n_batch = 0 if n_batch == 1 else n_batch
 
         if self.dispersion == "gene":
-            self.register_buffer("px_r", torch.randn(self.n_input))
+            self.register_buffer("px_r", torch.randn(n_input))
 
         self.z_encoder = Encoder(
             n_input,
@@ -69,7 +57,6 @@ class VAE(nn.Module):
             n_hidden=n_hidden,
             n_layers=n_layers,
             dropout_rate=dropout_rate,
-            batch=batch,
             n_batch=n_batch,
         )
 
@@ -78,12 +65,12 @@ class VAE(nn.Module):
         qz_m, qz_v, z = self.z_encoder.forward(x)
         return z
 
-    def sample_from_posterior_l(self, x, y=None):
+    def sample_from_posterior_l(self, x):
         # Here we compute as little as possible to have q(z|x)
         ql_m, ql_v, library = self.l_encoder.forward(x)
         return library
 
-    def get_sample_scale(self, x, y=None, batch_index=None):
+    def get_sample_scale(self, x, batch_index=None):
         z = self.sample_from_posterior_z(x)
         px = self.decoder.px_decoder_batch(z, batch_index)
         px_scale = self.decoder.px_scale_decoder(px)
@@ -92,7 +79,7 @@ class VAE(nn.Module):
     def get_sample_rate(self, x, y=None, batch_index=None):
         z = self.sample_from_posterior_z(x)
         library = self.sample_from_posterior_l(x)
-        px = self.decoder.px_decoder_batch(z, batch_index)
+        px = self.decoder.px_decoder(z, batch_index)
         return self.decoder.px_scale_decoder(px) * torch.exp(library)
 
     def sample(self, z):
@@ -102,12 +89,6 @@ class VAE(nn.Module):
         self, x, local_l_mean, local_l_var, batch_index=None, y=None
     ):  # same signature as loss
         # Parameters for z latent distribution
-        if self.batch and batch_index is None:
-            raise (
-                "This VAE was trained to take batches into account:"
-                "please provide batch indexes when running the forward pass"
-            )
-
         x_ = x
         if self.log_variational:
             x_ = torch.log(1 + x_)

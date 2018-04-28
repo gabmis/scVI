@@ -49,9 +49,7 @@ def run_benchmarks(
     )
     vae = model(
         gene_dataset.nb_genes,
-        batch=use_batches,
-        n_batch=gene_dataset.n_batches,
-        using_cuda=use_cuda,
+        n_batch=gene_dataset.n_batches * use_batches,
         n_labels=gene_dataset.n_labels,
     )
 
