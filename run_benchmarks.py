@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
-
 """Run all the benchmarks with specific parameters"""
 import argparse
 import time
 
-from scvi.benchmark import run_benchmarks
+from scvi.benchmark import run_benchmarks, run_benchmarks_classification
 from scvi.dataset import load_datasets
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--epochs", type=int, default=250, help="how many times to process the dataset"
+        "--epochs", type=int, default=1, help="how many times to process the dataset"
     )
     parser.add_argument(
         "--dataset", type=str, default="cortex", help="which dataset to process"
@@ -35,6 +34,13 @@ if __name__ == "__main__":
         show_batch_mixing=True,
     )
 
+    run_benchmarks_classification(
+        gene_dataset,
+        n_epochs=args.epochs,
+        n_epochs_classifier=args.epochs,
+        use_batches=(not args.nobatches),
+        use_cuda=(not args.nocuda),
+    )
     end = time.time()
     print(
         "Total runtime for "
