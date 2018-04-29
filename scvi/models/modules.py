@@ -4,7 +4,7 @@ import torch
 from torch import nn as nn
 from torch.distributions import Normal
 
-from scvi.utils import one_hot
+from scvi.models.utils import one_hot
 
 
 class FCLayers(nn.Module):
@@ -214,7 +214,13 @@ class Decoder(nn.Module):
 # Classifier
 class Classifier(nn.Module):
     def __init__(
-        self, n_input, n_hidden=128, n_labels=10, n_layers=1, dropout_rate=0.1
+        self,
+        n_input,
+        n_hidden=128,
+        n_labels=10,
+        n_layers=1,
+        dropout_rate=0.1,
+        use_cuda=False,
     ):
         super(Classifier, self).__init__()
         self.layers = FCLayers(
@@ -227,6 +233,10 @@ class Classifier(nn.Module):
         self.classifier = nn.Sequential(
             self.layers, nn.Linear(n_hidden, n_labels), nn.Softmax(dim=-1)
         )
+
+        self.use_cuda = use_cuda and torch.cuda.is_available()
+        if self.use_cuda:
+            self.cuda()
 
     def forward(self, x):
         # Parameters for latent distribution

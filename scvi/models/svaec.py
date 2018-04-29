@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
+from torch.distributions import Normal, Multinomial, kl_divergence as kl
 
-from scvi.log_likelihood import log_zinb_positive
-from scvi.modules import Decoder, Encoder, Classifier, DecoderSCVI
-from scvi.utils import enumerate_discrete, one_hot
+from scvi.metrics.log_likelihood import log_zinb_positive
+from scvi.models.modules import Decoder, Encoder, Classifier, DecoderSCVI
+from scvi.models.utils import enumerate_discrete, one_hot
 
 
 class SVAEC(nn.Module):
@@ -22,10 +23,9 @@ class SVAEC(nn.Module):
         dropout_rate=0.1,
         n_batch=0,
         y_prior=None,
-        using_cuda=False,
+        use_cuda=False,
     ):
         super(SVAEC, self).__init__()
-        self.using_cuda = using_cuda
         self.n_labels = n_labels
         self.n_input = n_input
 
@@ -72,6 +72,10 @@ class SVAEC(nn.Module):
         self.decoder_z1_z2 = Decoder(
             n_latent, n_latent, n_cat=self.n_labels, n_layers=n_layers
         )
+
+        self.use_cuda = use_cuda and torch.cuda.is_available()
+        if self.use_cuda:
+            self.cuda()
 
     def classify(self, x):
         qz_m, _, z = self.z_encoder(x)
@@ -135,31 +139,14 @@ class SVAEC(nn.Module):
         reconst_loss = -log_zinb_positive(xs, px_rate, torch.exp(self.px_r), px_dropout)
 
         # KL Divergence
-        kl_divergence_z2 = torch.sum(
-            0.5 * (qz2_m ** 2 + qz2_v - torch.log(qz2_v + 1e-8) - 1), dim=1
-        )
-        kl_divergence_z1 = torch.sum(
-            0.5
-            * (
-                ((qz1_m - pz1_m) ** 2 + qz1_v) / pz1_v
-                - torch.log(qz1_v + 1e-8)
-                + torch.log(pz1_v + 1e-8)
-                - 1
-            ),
-            dim=1,
-        )
-        kl_divergence_l = torch.sum(
-            0.5
-            * (
-                ((ql_m - local_l_mean) ** 2) / local_l_var
-                + ql_v / local_l_var
-                + torch.log(local_l_var + 1e-8)
-                - torch.log(ql_v + 1e-8)
-                - 1
-            ),
-            dim=1,
-        )
-
+        kl_divergence_z2 = kl(Normal(qz2_m, torch.sqrt(qz2_v)), Normal(0, 1)).sum(dim=1)
+        kl_divergence_z1 = kl(
+            Normal(qz1_m, torch.sqrt(qz1_v)), Normal(pz1_m, torch.sqrt(pz1_v))
+        ).sum(dim=1)
+        kl_divergence_l = kl(
+            Normal(ql_m, torch.sqrt(ql_v)),
+            Normal(local_l_mean, torch.sqrt(local_l_var)),
+        ).sum(dim=1)
         kl_divergence = kl_divergence_z2 + kl_divergence_z1 + kl_divergence_l
 
         if is_labelled:
@@ -168,13 +155,9 @@ class SVAEC(nn.Module):
         reconst_loss = reconst_loss.view(self.n_labels, -1)
         kl_divergence = kl_divergence.view(self.n_labels, -1)
 
-        proba = self.classifier(z1_)
-
-        reconst_loss = (reconst_loss.t() * proba).sum(dim=1)
-        kl_divergence = (kl_divergence.t() * proba).sum(dim=1)
-        y_prior = self.y_prior.type(proba.type())
-        kl_divergence += torch.sum(
-            torch.mul(proba, torch.log(y_prior) - torch.log(proba + 1e-8)), dim=-1
-        )
+        probs = self.classifier(z1_)
+        reconst_loss = (reconst_loss.t() * probs).sum(dim=1)
+        kl_divergence = (kl_divergence.t() * probs).sum(dim=1)
+        kl_divergence += kl(Multinomial(probs=probs), Multinomial(probs=self.y_prior))
 
         return reconst_loss, kl_divergence
