@@ -124,6 +124,7 @@ def run_benchmarks_classification(
     print("Trying M1 model")
     vae = VAE(
         gene_dataset.nb_genes,
+        n_latent=n_latent,
         n_batch=gene_dataset.n_batches * use_batches,
         use_cuda=use_cuda,
         n_labels=gene_dataset.n_labels,

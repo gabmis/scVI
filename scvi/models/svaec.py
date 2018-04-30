@@ -76,6 +76,7 @@ class SVAEC(nn.Module):
         self.use_cuda = use_cuda and torch.cuda.is_available()
         if self.use_cuda:
             self.cuda()
+            self.y_prior = self.y_prior.cuda()
 
     def classify(self, x):
         qz_m, _, z = self.z_encoder(x)
@@ -139,7 +140,12 @@ class SVAEC(nn.Module):
         reconst_loss = -log_zinb_positive(xs, px_rate, torch.exp(self.px_r), px_dropout)
 
         # KL Divergence
-        kl_divergence_z2 = kl(Normal(qz2_m, torch.sqrt(qz2_v)), Normal(0, 1)).sum(dim=1)
+        mean = torch.zeros_like(qz2_m)
+        scale = torch.zeros_like(qz2_v)
+
+        kl_divergence_z2 = kl(
+            Normal(qz2_m, torch.sqrt(qz2_v)), Normal(mean, scale)
+        ).sum(dim=1)
         kl_divergence_z1 = kl(
             Normal(qz1_m, torch.sqrt(qz1_v)), Normal(pz1_m, torch.sqrt(pz1_v))
         ).sum(dim=1)
@@ -158,6 +164,7 @@ class SVAEC(nn.Module):
         probs = self.classifier(z1_)
         reconst_loss = (reconst_loss.t() * probs).sum(dim=1)
         kl_divergence = (kl_divergence.t() * probs).sum(dim=1)
+
         kl_divergence += kl(Multinomial(probs=probs), Multinomial(probs=self.y_prior))
 
         return reconst_loss, kl_divergence
