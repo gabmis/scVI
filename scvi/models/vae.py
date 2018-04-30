@@ -120,7 +120,7 @@ class VAE(nn.Module):
 
         # KL Divergence
         mean = torch.zeros_like(qz_m)
-        scale = torch.zeros_like(qz_v)
+        scale = torch.ones_like(qz_v)
 
         kl_divergence_z = kl(Normal(qz_m, torch.sqrt(qz_v)), Normal(mean, scale)).sum(
             dim=1
