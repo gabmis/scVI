@@ -79,8 +79,13 @@ class SVAEC(nn.Module):
             self.y_prior = self.y_prior.cuda()
 
     def classify(self, x):
-        qz_m, _, z = self.z_encoder(x)
-        return self.classifier(z)
+        x_ = torch.log(1 + x)
+        qz_m, _, z = self.z_encoder(x_)
+
+        if self.training:
+            return self.classifier(z)
+        else:
+            return self.classifier(qz_m)
 
     def sample_from_posterior_z(self, x, y=None):
         # Here we compute as little as possible to have q(z|x)
@@ -146,14 +151,15 @@ class SVAEC(nn.Module):
         kl_divergence_z2 = kl(
             Normal(qz2_m, torch.sqrt(qz2_v)), Normal(mean, scale)
         ).sum(dim=1)
-        kl_divergence_z1 = kl(
-            Normal(qz1_m, torch.sqrt(qz1_v)), Normal(pz1_m, torch.sqrt(pz1_v))
+        loss_z1 = (
+            -Normal(pz1_m, torch.sqrt(pz1_v)).log_prob(z1)
+            + Normal(qz1_m, torch.sqrt(qz1_v)).log_prob(z1)
         ).sum(dim=1)
         kl_divergence_l = kl(
             Normal(ql_m, torch.sqrt(ql_v)),
             Normal(local_l_mean, torch.sqrt(local_l_var)),
         ).sum(dim=1)
-        kl_divergence = kl_divergence_z2 + kl_divergence_z1 + kl_divergence_l
+        kl_divergence = kl_divergence_z2 + loss_z1 + kl_divergence_l
 
         if is_labelled:
             return reconst_loss, kl_divergence
