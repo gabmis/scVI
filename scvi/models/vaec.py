@@ -36,7 +36,7 @@ class VAEC(nn.Module):
             raise ValueError("VAEC is only implemented for > 1 label dataset")
 
         if self.dispersion == "gene":
-            self.register_buffer("px_r", torch.randn(n_input))
+            self.px_r = torch.nn.Parameter(torch.randn(n_input))
 
         self.z_encoder = Encoder(
             n_input,
@@ -76,6 +76,7 @@ class VAEC(nn.Module):
             self.y_prior = self.y_prior.cuda()
 
     def classify(self, x):
+        x = torch.log(1 + x)
         return self.classifier(x)
 
     def sample_from_posterior_z(self, x, y):
@@ -85,16 +86,18 @@ class VAEC(nn.Module):
 
     def sample_from_posterior_l(self, x):
         # Here we compute as little as possible to have q(z|x)
-        ql_m, ql_v, library = self.l_encoder.forward(x)
+        ql_m, ql_v, library = self.l_encoder(x)
         return library
 
     def get_sample_scale(self, x, y=None, batch_index=None):
+        x = torch.log(1 + x)
         z = self.sample_from_posterior_z(x, y)
         px = self.decoder.px_decoder(z, batch_index, y)
         px_scale = self.decoder.px_scale_decoder(px)
         return px_scale
 
     def get_sample_rate(self, x, y=None, batch_index=None):
+        x = torch.log(1 + x)
         z = self.sample_from_posterior_z(x, y)
         library = self.sample_from_posterior_l(x)
         px = self.decoder.px_decoder(z, batch_index, y)
