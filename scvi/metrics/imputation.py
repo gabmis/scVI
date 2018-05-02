@@ -8,8 +8,6 @@ from scvi.utils import to_cuda, no_grad, eval_modules
 @eval_modules()
 def imputation(vae, data_loader, rate=0.1):
     distance_list = torch.FloatTensor([])
-    if vae.use_cuda:
-        distance_list = distance_list.cuda(async=True)
     for tensorlist in data_loader:
         if vae.use_cuda:
             tensorlist = to_cuda(tensorlist)
@@ -29,7 +27,7 @@ def imputation(vae, data_loader, rate=0.1):
         distance_list = torch.cat(
             [
                 distance_list,
-                torch.abs(px_rate[i[ix], j[ix]] - sample_batch[i[ix], j[ix]]),
+                torch.abs(px_rate[i[ix], j[ix]] - sample_batch[i[ix], j[ix]]).cpu(),
             ]
         )
     return torch.median(distance_list)
