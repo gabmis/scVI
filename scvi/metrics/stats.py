@@ -88,9 +88,11 @@ class EarlyStopping:
         self.patience = patience
         self.threshold = threshold
         self.current_performances = np.ones((patience))
+        self.epoch = 0
 
     def update(self, scalar):
-        if self.benchmark:
+        self.epoch += 1
+        if self.benchmark or self.epoch <= self.patience:
             return True
         else:
             # Shift
@@ -99,7 +101,7 @@ class EarlyStopping:
 
             # Compute improvement
             improvement = (
-                self.current_performances[0] - self.current_performances[-1]
+                self.current_performances[-1] - self.current_performances[0]
             ) / self.current_performances[0]
 
             # Returns true if improvement is good enough

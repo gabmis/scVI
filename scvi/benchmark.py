@@ -35,17 +35,27 @@ def run_benchmarks(
     example_indices = np.random.permutation(len(gene_dataset))
     tt_split = int(tt_split * len(gene_dataset))  # 90%/10% train/test split
 
+    if hasattr(gene_dataset, "idx_train"):
+        idx_train = gene_dataset.idx_train
+        idx_test = gene_dataset.idx_test
+    else:
+        idx_train = example_indices[:tt_split]
+        idx_test = example_indices[tt_split:]
+
+    print("Train dataset has ", len(idx_train), " barcodes(/samples)")
+    print("Test dataset has ", len(idx_test), " barcodes(/samples)")
+    print("Nb genes: ", gene_dataset.X.shape[1])
     data_loader_train = DataLoader(
         gene_dataset,
-        batch_size=128,
+        batch_size=512,
         pin_memory=use_cuda,
-        sampler=SubsetRandomSampler(example_indices[:tt_split]),
+        sampler=SubsetRandomSampler(idx_train),
     )
     data_loader_test = DataLoader(
         gene_dataset,
-        batch_size=128,
+        batch_size=512,
         pin_memory=use_cuda,
-        sampler=SubsetRandomSampler(example_indices[tt_split:]),
+        sampler=SubsetRandomSampler(idx_test),
     )
     vae = model(
         gene_dataset.nb_genes,
