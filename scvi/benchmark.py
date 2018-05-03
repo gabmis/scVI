@@ -11,7 +11,7 @@ from scvi.metrics.imputation import imputation
 from scvi.metrics.visualization import show_t_sne
 from scvi.models import VAE, SVAEC
 from scvi.models.modules import Classifier
-from scvi.train import train, train_classifier
+from scvi.train import train, train_classifier, train_semi_supervised
 
 
 def run_benchmarks(
@@ -22,6 +22,8 @@ def run_benchmarks(
     use_batches=False,
     use_cuda=True,
     show_batch_mixing=True,
+    benchmark=False,
+    tt_split=0.9,
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -31,7 +33,7 @@ def run_benchmarks(
     # - batch mixing
     # - cluster scores
     example_indices = np.random.permutation(len(gene_dataset))
-    tt_split = int(0.5 * len(gene_dataset))  # 50%/50% train/test split
+    tt_split = int(tt_split * len(gene_dataset))  # 90%/10% train/test split
 
     data_loader_train = DataLoader(
         gene_dataset,
@@ -51,8 +53,14 @@ def run_benchmarks(
         n_labels=gene_dataset.n_labels,
         use_cuda=use_cuda,
     )
-
-    stats = train(vae, data_loader_train, data_loader_test, n_epochs=n_epochs, lr=lr)
+    stats = train(
+        vae,
+        data_loader_train,
+        data_loader_test,
+        n_epochs=n_epochs,
+        lr=lr,
+        benchmark=benchmark,
+    )
 
     # - log-likelihood
     print("Log-likelihood Train:", stats.history["LL_train"][-1])
@@ -92,8 +100,7 @@ def run_benchmarks_classification(
     lr=1e-2,
     use_batches=False,
     use_cuda=True,
-    verbose=False,
-    record_frequency=1,
+    tt_split=0.9,
 ):
     fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 5))
 
@@ -103,7 +110,7 @@ def run_benchmarks_classification(
 
     # Create the dataset
     example_indices = np.random.permutation(len(gene_dataset))
-    tt_split = int(0.5 * len(gene_dataset))  # 50%/50% train/test split
+    tt_split = int(tt_split * len(gene_dataset))  # 90%/10% train/test split
 
     data_loader_train = DataLoader(
         gene_dataset,
@@ -129,14 +136,8 @@ def run_benchmarks_classification(
         use_cuda=use_cuda,
         n_labels=gene_dataset.n_labels,
     )
-    train(
-        vae,
-        data_loader_train,
-        data_loader_test,
-        n_epochs=n_epochs,
-        lr=lr,
-        verbose=verbose,
-        record_frequency=record_frequency,
+    train_semi_supervised(
+        vae, data_loader_train, data_loader_test, n_epochs=n_epochs, lr=lr
     )
 
     # Then we train a classifier on the latent space
@@ -152,8 +153,6 @@ def run_benchmarks_classification(
         data_loader_test,
         n_epochs=n_epochs_classifier,
         lr=lr,
-        verbose=verbose,
-        record_frequency=record_frequency,
     )
 
     axes[0].plot(cls_stats.history["Accuracy_train"], label="classifier")
@@ -181,55 +180,17 @@ def run_benchmarks_classification(
     svaec.z_encoder.load_state_dict(vae.z_encoder.state_dict())
     for param in svaec.z_encoder.parameters():
         param.requires_grad = False
-    stats = train(
+    stats = train_semi_supervised(
         svaec,
         data_loader_train,
         data_loader_test,
         n_epochs=n_epochs,
         lr=lr,
-        reconstruction_ratio=0,
         classification_ratio=alpha,
-        verbose=verbose,
-        record_frequency=record_frequency,
     )
 
     # We don't train the first z encoder in this procedure
     axes[0].plot(stats.history["Accuracy_train"], label="M1+M2 (frozen)")
-    axes[1].plot(stats.history["Accuracy_test"])
-
-    # ========== The M1+M2 model w/o reconstruction loss ===========
-    print("Trying out M1+M2 w/o reconstruction loss")
-    prior = torch.FloatTensor(
-        [
-            (gene_dataset.labels == i).type(torch.float32).mean()
-            for i in range(gene_dataset.n_labels)
-        ]
-    )
-
-    vaec = SVAEC(
-        gene_dataset.nb_genes,
-        n_batch=gene_dataset.n_batches * use_batches,
-        n_labels=gene_dataset.n_labels,
-        y_prior=prior,
-        use_cuda=use_cuda,
-        n_latent=n_latent,
-    )
-
-    # Use a pretrained z encoder
-    # vaec.z_encoder.load_state_dict(vae.z_encoder.state_dict())
-    stats = train(
-        vaec,
-        data_loader_train,
-        data_loader_test,
-        n_epochs=n_epochs,
-        lr=lr,
-        reconstruction_ratio=0,
-        classification_ratio=alpha,
-        verbose=verbose,
-        record_frequency=record_frequency,
-    )
-
-    axes[0].plot(stats.history["Accuracy_train"], label="M1+M2 (no recons)")
     axes[1].plot(stats.history["Accuracy_test"])
 
     # ========== The M1+M2 model trained jointly ===========
@@ -241,7 +202,7 @@ def run_benchmarks_classification(
         ]
     )
 
-    vaec = SVAEC(
+    svaec = SVAEC(
         gene_dataset.nb_genes,
         n_labels=gene_dataset.n_labels,
         y_prior=prior,
@@ -249,16 +210,13 @@ def run_benchmarks_classification(
         use_cuda=use_cuda,
     )
 
-    # vaec.z_encoder.load_state_dict(vae.z_encoder.state_dict())
-    stats = train(
-        vaec,
+    stats = train_semi_supervised(
+        svaec,
         data_loader_train,
         data_loader_test,
         n_epochs=n_epochs,
         lr=lr,
         classification_ratio=alpha,
-        verbose=verbose,
-        record_frequency=record_frequency,
     )
 
     axes[0].plot(stats.history["Accuracy_train"], label="M1+M2 (train all)")
@@ -271,15 +229,13 @@ def run_benchmarks_classification(
     )
 
     stats = train_classifier(
-        vaec,
+        svaec,
         cls,
         data_loader_train,
         data_loader_test,
         n_epochs=n_epochs_classifier,
         lr=lr,
-        verbose=verbose,
-        record_frequency=record_frequency,
-    )  # alpha
+    )
 
     axes[0].plot(stats.history["Accuracy_train"], label="M1+M2+classifier")
     axes[1].plot(stats.history["Accuracy_test"])
