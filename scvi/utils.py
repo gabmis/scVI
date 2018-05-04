@@ -1,3 +1,5 @@
+import os
+import pickle
 from contextlib import ContextDecorator
 
 import torch
@@ -22,6 +24,23 @@ class eval_modules:
                 for a in args + tuple(kwargs.items())
                 if isinstance(a, nn.Module)
             ]
+            return result
+
+        return wrapper
+
+
+class pickle_result:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def __call__(self, function):
+        def wrapper(*args, **kwargs):
+            if os.path.exists(self.filename):
+                print("Loading pickled result")
+                return pickle.load(open(self.filename, "rb"))
+            else:
+                result = function(*args, **kwargs)
+                pickle.dump(result, open(self.filename, "wb"))
             return result
 
         return wrapper

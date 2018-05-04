@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
 from scvi.dataset import CortexDataset
+from scvi.metrics.adapt_encoder import adapt_encoder
 from scvi.metrics.clustering import entropy_batch_mixing, get_latent
 from scvi.metrics.differential_expression import get_statistics
 from scvi.metrics.imputation import imputation
@@ -12,7 +13,6 @@ from scvi.metrics.visualization import show_t_sne
 from scvi.models import VAE, SVAEC
 from scvi.models.modules import Classifier
 from scvi.train import train, train_classifier, train_semi_supervised
-from scvi.metrics.adapt_encoder import adapt_encoder
 
 
 def run_benchmarks(
@@ -36,27 +36,17 @@ def run_benchmarks(
     example_indices = np.random.permutation(len(gene_dataset))
     tt_split = int(tt_split * len(gene_dataset))  # 90%/10% train/test split
 
-    if hasattr(gene_dataset, "idx_train"):
-        idx_train = gene_dataset.idx_train
-        idx_test = gene_dataset.idx_test
-    else:
-        idx_train = example_indices[:tt_split]
-        idx_test = example_indices[tt_split:]
-
-    print("Train dataset has ", len(idx_train), " barcodes(/samples)")
-    print("Test dataset has ", len(idx_test), " barcodes(/samples)")
-    print("Nb genes: ", gene_dataset.X.shape[1])
     data_loader_train = DataLoader(
         gene_dataset,
         batch_size=128,
         pin_memory=use_cuda,
-        sampler=SubsetRandomSampler(idx_train),
+        sampler=SubsetRandomSampler(example_indices[:tt_split]),
     )
     data_loader_test = DataLoader(
         gene_dataset,
         batch_size=128,
         pin_memory=use_cuda,
-        sampler=SubsetRandomSampler(idx_test),
+        sampler=SubsetRandomSampler(example_indices[tt_split:]),
     )
     vae = model(
         gene_dataset.nb_genes,
