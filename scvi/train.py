@@ -31,9 +31,8 @@ def train(
     for epoch in range(n_epochs):
         total_train_loss = 0
         for i_batch, (tensors_train) in enumerate(data_loader_train):
-            with torch.no_grad():
-                if vae.use_cuda:
-                    tensors_train = to_cuda(tensors_train)
+            if vae.use_cuda:
+                tensors_train = to_cuda(tensors_train)
             sample_batch_train, local_l_mean_train, local_l_var_train, batch_index_train, labels_train = (
                 tensors_train
             )
