@@ -64,7 +64,9 @@ def run_benchmarks(
     )
 
     if isinstance(vae, VAE):
-        best_ll = adapt_encoder(vae, data_loader_test)
+        best_ll = adapt_encoder(
+            vae, data_loader_test, n_path=1, n_epochs=1, record_freq=1
+        )
         print("Best ll was :", best_ll)
 
     # - log-likelihood
