@@ -64,6 +64,7 @@ def train(
             break
         stats.callback(vae, data_loader_train, data_loader_test)
     stats.display_time()
+    stats.set_best_params(vae)
     return stats
 
 
