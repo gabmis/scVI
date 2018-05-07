@@ -90,7 +90,6 @@ def run_benchmarks(
             show_t_sne(
                 latent.cpu().numpy(),
                 np.array([batch[0] for batch in batch_indices.cpu().numpy()]),
-                "Batch mixing t_SNE plot",
             )
 
     # - differential expression
