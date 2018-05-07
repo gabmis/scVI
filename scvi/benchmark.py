@@ -81,7 +81,7 @@ def run_benchmarks(
 
     # - batch mixing
     if gene_dataset.n_batches == 2:
-        latent, batch_indices = get_latent(vae, data_loader_train)
+        latent, batch_indices, labels = get_latent(vae, data_loader_train)
         print(
             "Entropy batch mixing :",
             entropy_batch_mixing(latent.cpu().numpy(), batch_indices.cpu().numpy()),
