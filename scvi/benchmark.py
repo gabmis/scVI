@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from scvi.dataset import CortexDataset, GeneExpressionDataset, load_datasets
+from scvi.dataset import CortexDataset, load_datasets
 from scvi.metrics.adapt_encoder import adapt_encoder
 from scvi.metrics.clustering import entropy_batch_mixing, get_latent
 from scvi.metrics.differential_expression import get_statistics
@@ -43,14 +43,14 @@ def run_benchmarks(
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[:tt_split]),
-        collate_fn=GeneExpressionDataset.collate_fn,
+        collate_fn=gene_dataset.collate_fn,
     )
     data_loader_test = DataLoader(
         gene_dataset,
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[tt_split:]),
-        collate_fn=GeneExpressionDataset.collate_fn,
+        collate_fn=gene_dataset.collate_fn,
     )
     vae = model(
         gene_dataset.nb_genes,
@@ -128,14 +128,14 @@ def run_benchmarks_classification(
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[:tt_split]),
-        collate_fn=GeneExpressionDataset.collate_fn,
+        collate_fn=gene_dataset.collate_fn,
     )
     data_loader_test = DataLoader(
         gene_dataset,
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[tt_split:]),
-        collate_fn=GeneExpressionDataset.collate_fn,
+        collate_fn=gene_dataset.collate_fn,
     )
 
     # Now we try out the different models and compare the classification accuracy
