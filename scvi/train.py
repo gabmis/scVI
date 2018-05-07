@@ -142,7 +142,7 @@ def train_semi_supervised(
                 classification_loss = F.cross_entropy(
                     vae.classify(sample_batch_train), labels_train.view(-1)
                 )
-                train_loss += classification_loss * classification_ratio
+                train_test_loss += classification_loss * classification_ratio
 
             batch_size = sample_batch_train.size(0)
             total_train_loss += train_loss.item() * batch_size
