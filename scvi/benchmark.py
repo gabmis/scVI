@@ -43,12 +43,14 @@ def run_benchmarks(
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[:tt_split]),
+        collate_fn=gene_dataset.collate_fn,
     )
     data_loader_test = DataLoader(
         gene_dataset,
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[tt_split:]),
+        collate_fn=gene_dataset.collate_fn,
     )
     vae = model(
         gene_dataset.nb_genes,
@@ -126,12 +128,14 @@ def run_benchmarks_classification(
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[:tt_split]),
+        collate_fn=gene_dataset.collate_fn,
     )
     data_loader_test = DataLoader(
         gene_dataset,
         batch_size=128,
         pin_memory=use_cuda,
         sampler=SubsetRandomSampler(example_indices[tt_split:]),
+        collate_fn=gene_dataset.collate_fn,
     )
 
     # Now we try out the different models and compare the classification accuracy
@@ -170,10 +174,7 @@ def run_benchmarks_classification(
     # ========== The M1+M2 model, first encoder frozen ===========
     print("Trying out standard M1+M2 model")
     prior = torch.FloatTensor(
-        [
-            (gene_dataset.labels == i).type(torch.float32).mean()
-            for i in range(gene_dataset.n_labels)
-        ]
+        [(gene_dataset.labels == i).mean() for i in range(gene_dataset.n_labels)]
     )
 
     svaec = SVAEC(
@@ -204,13 +205,6 @@ def run_benchmarks_classification(
 
     # ========== The M1+M2 model trained jointly ===========
     print("Trying out M1+M2 optimized jointly")
-    prior = torch.FloatTensor(
-        [
-            (gene_dataset.labels == i).type(torch.float32).mean()
-            for i in range(gene_dataset.n_labels)
-        ]
-    )
-
     svaec = SVAEC(
         gene_dataset.nb_genes,
         n_labels=gene_dataset.n_labels,
