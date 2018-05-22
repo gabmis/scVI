@@ -18,25 +18,18 @@ class GeneExpressionDataset(Dataset):
     """
 
     def __init__(
-        self,
-        X,
-        local_means,
-        local_vars,
-        batch_indices,
-        labels,
-        gene_names=None,
-        n_batches=1,
+        self, X, local_means, local_vars, batch_indices, labels, gene_names=None
     ):
         # Args:
         # Xs: a list of numpy tensors with .shape[1] identical (total_size*nb_genes)
         # or a list of scipy CSR sparse matrix,
         # or transposed CSC sparse matrix (the argument sparse must then be set to true)
         self.total_size, self.nb_genes = X.shape
-        self.n_batches = n_batches
         self.local_means = local_means
         self.local_vars = local_vars
         self.labels = labels
         self.batch_indices = batch_indices
+        self.n_batches = len(np.unique(batch_indices))
         self.dense = type(X) is np.ndarray
         self.X = X
         self.labels = labels
