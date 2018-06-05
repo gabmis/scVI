@@ -62,12 +62,14 @@ def get_statistics(
         px_scale[all_labels.view(-1) == couple_celltypes[0]]
         .view(-1, px_scale.size(1))
         .cpu()
+        .detach()
         .numpy()
     )
     sample_rate_b = (
         px_scale[all_labels.view(-1) == couple_celltypes[1]]
         .view(-1, px_scale.size(1))
         .cpu()
+        .detach()
         .numpy()
     )
 
