@@ -19,7 +19,7 @@ def train(
 ):
     # Defining the optimizer
     optimizer = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, vae.parameters()), lr=lr, eps=0.01
+        filter(lambda p: p.requires_grad, vae.parameters()), lr=lr
     )
 
     # Getting access to the stats during training
@@ -81,7 +81,7 @@ def train_semi_supervised(
 ):
     # Defining the optimizer
     optimizer = torch.optim.Adam(
-        filter(lambda p: p.requires_grad, vae.parameters()), lr=lr, eps=0.01
+        filter(lambda p: p.requires_grad, vae.parameters()), lr=lr
     )
 
     # Getting access to the stats during training
