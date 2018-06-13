@@ -25,7 +25,7 @@ def run_benchmarks(
     show_batch_mixing=True,
     benchmark=False,
     tt_split=0.9,
-    unit_test=False,
+    save_path="data/",
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -34,7 +34,7 @@ def run_benchmarks(
     # - imputation
     # - batch mixing
     # - cluster scores
-    gene_dataset = load_datasets(dataset_name, unit_test=unit_test)
+    gene_dataset = load_datasets(dataset_name, save_path=save_path)
     example_indices = np.random.permutation(len(gene_dataset))
     tt_split = int(tt_split * len(gene_dataset))  # 90%/10% train/test split
 
