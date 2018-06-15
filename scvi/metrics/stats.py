@@ -17,7 +17,7 @@ class Stats:
         benchmark=False,
         names=["train", "test", "val"],
     ):
-        self.verbose = verbose
+        self.verbose = verbose if not benchmark else False
         self.record_freq = record_freq
         self.n_epochs = n_epochs
         self.benchmark = benchmark
