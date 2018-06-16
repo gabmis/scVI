@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from scvi.dataset import CortexDataset, load_datasets
+from scvi.dataset import CortexDataset
 from scvi.dataset.utils import get_data_loaders, get_raw_data
 from scvi.metrics.adapt_encoder import adapt_encoder
 from scvi.metrics.classification import compute_accuracy_rf, compute_accuracy_svc
@@ -23,7 +23,7 @@ from scvi.train import (
 
 
 def run_benchmarks(
-    dataset_name,
+    gene_dataset,
     model=VAE,
     n_epochs=1000,
     lr=1e-3,
@@ -32,7 +32,6 @@ def run_benchmarks(
     show_batch_mixing=True,
     benchmark=False,
     tt_split=0.9,
-    save_path="data/",
 ):
     # options:
     # - gene_dataset: a GeneExpressionDataset object
@@ -41,7 +40,6 @@ def run_benchmarks(
     # - imputation
     # - batch mixing
     # - cluster scores
-    gene_dataset = load_datasets(dataset_name, save_path=save_path)
     example_indices = np.random.permutation(len(gene_dataset))
     tt_split = int(tt_split * len(gene_dataset))  # 90%/10% train/test split
 
@@ -104,7 +102,7 @@ def run_benchmarks(
 
 # Pipeline to compare different semi supervised models
 def run_benchmarks_classification(
-    dataset_name,
+    gene_dataset,
     n_latent=10,
     n_epochs=10,
     n_epochs_classifier=10,
@@ -113,7 +111,6 @@ def run_benchmarks_classification(
     use_cuda=True,
     tt_split=0.9,
 ):
-    gene_dataset = load_datasets(dataset_name)
     fig, axes = plt.subplots(1, 2, sharey=True, figsize=(12, 5))
     alpha = (
         100
