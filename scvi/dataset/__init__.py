@@ -8,6 +8,7 @@ from .brain_small import BrainSmallDataset
 from .hemato import HematoDataset
 from .pbmc import PbmcDataset
 from .loom import LoomDataset
+from .anndata import AnnDataset
 
 __all__ = [
     "SyntheticDataset",
@@ -20,4 +21,5 @@ __all__ = [
     "HematoDataset",
     "PbmcDataset",
     "LoomDataset",
+    "AnnDataset",
 ]
