@@ -9,6 +9,7 @@ from .hemato import HematoDataset
 from .pbmc import PbmcDataset
 from .loom import LoomDataset
 from .anndata import AnnDataset
+from .csv import CsvDataset
 
 __all__ = [
     "SyntheticDataset",
@@ -22,4 +23,5 @@ __all__ = [
     "PbmcDataset",
     "LoomDataset",
     "AnnDataset",
+    "CsvDataset",
 ]

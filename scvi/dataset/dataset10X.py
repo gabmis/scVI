@@ -28,13 +28,13 @@ available_specification = ["filtered", "raw"]
 
 
 class Dataset10X(GeneExpressionDataset):
-    def __init__(self, name, type="filtered", p_genes=1.0, save_path="data/"):
-        group = to_groups[name]
+    def __init__(self, filename, save_path="data/", type="filtered", new_n_genes=3000):
+        group = to_groups[filename]
         self.url = (
             "http://cf.10xgenomics.com/samples/cell-exp/%s/%s/%s_%s_gene_bc_matrices.tar.gz"
-            % (group, name, name, type)
+            % (group, filename, filename, type)
         )
-        self.save_path = save_path + "10X/%s/" % name
+        self.save_path = save_path + "10X/%s/" % filename
         self.save_name = "%s_gene_bc_matrices" % type
 
         self.download_name = self.save_name + ".tar.gz"
@@ -44,8 +44,7 @@ class Dataset10X(GeneExpressionDataset):
             gene_names=gene_names
         )
 
-        if p_genes != 1.0 and not p_genes > len(self.gene_names):
-            self.subsample_genes(p_genes)
+        self.subsample_genes(new_n_genes)
 
     def preprocess(self):
         print("Preprocessing data")

@@ -16,6 +16,7 @@ from scvi.dataset import (
     PbmcDataset,
     LoomDataset,
     AnnDataset,
+    CsvDataset,
 )
 
 
@@ -80,14 +81,19 @@ def test_remote_loom():
 
 
 def test_cortex_loom():
-    cortex_dataset = LoomDataset(
-        "Cortex.loom",
-        save_path="tests/data/",
-        url="http://loom.linnarssonlab.org/clone/Previously%20Published/Cortex.loom",
-    )
+    cortex_dataset = LoomDataset("Cortex.loom", save_path="tests/data/")
     run_benchmarks(cortex_dataset, n_epochs=1, show_batch_mixing=False)
 
 
 def test_anndata():
-    ann_dataset = AnnDataset("tests.h5ad", save_path="tests/data/")
+    ann_dataset = AnnDataset("test.h5ad", save_path="tests/data/")
     run_benchmarks(ann_dataset, n_epochs=1, show_batch_mixing=False)
+
+
+def test_csv():
+    csv_dataet = CsvDataset(
+        "GSE100866_CBMC_8K_13AB_10X-RNA_umi.csv.gz",
+        save_path="tests/data/",
+        compression="gzip",
+    )
+    run_benchmarks(csv_dataet, n_epochs=1, show_batch_mixing=False)
