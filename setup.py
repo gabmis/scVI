@@ -19,6 +19,7 @@ requirements = [
     "pandas>=0.2",
     "loompy>=2.0",
     "tqdm >= 4",
+    "anndata >= 0.6",
 ]
 
 setup_requirements = ["pytest-runner"]
