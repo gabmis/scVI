@@ -30,4 +30,4 @@ def imputation(vae, data_loader, rate=0.1):
                 torch.abs(px_rate[i[ix], j[ix]] - sample_batch[i[ix], j[ix]]).cpu(),
             ]
         )
-    return torch.median(distance_list)
+    return distance_list
