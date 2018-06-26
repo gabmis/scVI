@@ -44,7 +44,8 @@ class Dataset10X(GeneExpressionDataset):
             gene_names=gene_names
         )
 
-        self.subsample_genes(new_n_genes)
+        if new_n_genes is not None:
+            self.subsample_genes(new_n_genes)
 
     def preprocess(self):
         print("Preprocessing data")
