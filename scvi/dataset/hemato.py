@@ -1,6 +1,7 @@
 import pandas as pd
 from zipfile import ZipFile
 from .dataset import GeneExpressionDataset
+from pathlib import Path
 
 
 class HematoDataset(GeneExpressionDataset):
@@ -30,7 +31,7 @@ class HematoDataset(GeneExpressionDataset):
         print("Preprocessing Hemato data")
 
         with ZipFile(self.save_path + "data.zip", "r") as zip:
-            zip.extractall(path=self.save_path)
+            zip.extractall(path=Path(self.save_path).parent)
 
         raw_counts = pd.read_csv(
             self.save_path + self.download_names[0], compression="gzip"
