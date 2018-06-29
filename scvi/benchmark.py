@@ -4,9 +4,8 @@ import torch
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from scvi.dataset import CortexDataset
+from scvi.dataset import CortexDataset, BrainLargeDataset
 from scvi.dataset.utils import get_data_loaders, get_raw_data
-from scvi.dataset.benchmark_hyperparameters import benchmark_hyperparameters
 from scvi.metrics.adapt_encoder import adapt_encoder
 from scvi.metrics.classification import compute_accuracy_rf, compute_accuracy_svc
 from scvi.metrics.clustering import entropy_batch_mixing, get_latent
@@ -21,6 +20,24 @@ from scvi.train import (
     train_semi_supervised_jointly,
     train_semi_supervised_alternately,
 )
+
+
+def benchmark_hyperparameters(gene_dataset):
+    """
+    Possibly specify hyper parameters according to Table2 in "Bayesian Inference for a Generative Model of
+    transcriptome Profiles from Single-cell RNA Sequencing"
+    :param gene_dataset:
+    :return:
+    """
+    hyperparameters = dict()
+    if isinstance(gene_dataset, BrainLargeDataset):
+        if gene_dataset.nb_genes > 10000 and gene_dataset.nb_genes < 15000:
+            hyperparameters["n_layers"] = 2
+        elif gene_dataset.nb_genes > 15000:
+            hyperparameters["n_layers"] = 3
+            hyperparameters["n_hidden"] = 256
+
+    return hyperparameters
 
 
 def run_benchmarks(
