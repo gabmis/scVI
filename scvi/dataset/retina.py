@@ -3,8 +3,6 @@ from .loom import LoomDataset
 
 class RetinaDataset(LoomDataset):
     def __init__(self, save_path="data/"):
-
-        print("Finished preprocessing Retina dataset")
         super(RetinaDataset, self).__init__(
             filename="retina.loom",
             save_path=save_path,

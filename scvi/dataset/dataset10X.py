@@ -48,7 +48,7 @@ class Dataset10X(GeneExpressionDataset):
             self.subsample_genes(new_n_genes)
 
     def preprocess(self):
-        print("Preprocessing data")
+        print("Preprocessing dataset")
         if len(os.listdir(self.save_path)) == 1:  # nothing extracted yet
             print("Extracting tar file")
             tar = tarfile.open(self.save_path + self.download_name, "r:gz")
@@ -61,4 +61,5 @@ class Dataset10X(GeneExpressionDataset):
         gene_names = genes_info.values[:, 0].astype(np.str).ravel()
         expression_data = io.mmread(path + "matrix.mtx").T.A
 
+        print("Finished preprocessing dataset")
         return expression_data, gene_names

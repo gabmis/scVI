@@ -17,6 +17,8 @@ from scvi.dataset import (
     AnnDataset,
     CsvDataset,
     CiteSeqDataset,
+    CbmcDataset,
+    PbmcDataset,
 )
 from scvi.dataset.utils import concat_datasets
 from scvi.models import VAEC, VAE, SVAEC
@@ -71,10 +73,10 @@ def test_loom():
 def test_remote_loom():
     fish_dataset = LoomDataset(
         "osmFISH_SScortex_mouse_all_cell.loom",
-        save_path="data/",
+        save_path="tests/data/",
         url="http://linnarssonlab.org/osmFISH/osmFISH_SScortex_mouse_all_cells.loom",
     )
-    run_benchmarks(fish_dataset, n_epochs=10, show_batch_mixing=False)
+    run_benchmarks(fish_dataset, n_epochs=1, show_batch_mixing=False)
 
 
 def test_cortex_loom():
@@ -88,12 +90,12 @@ def test_anndata():
 
 
 def test_csv():
-    csv_dataet = CsvDataset(
+    csv_dataset = CsvDataset(
         "GSE100866_CBMC_8K_13AB_10X-RNA_umi.csv.gz",
         save_path="tests/data/",
         compression="gzip",
     )
-    run_benchmarks(csv_dataet, n_epochs=1, show_batch_mixing=False)
+    run_benchmarks(csv_dataset, n_epochs=1, show_batch_mixing=False)
 
 
 def test_concat_datasets():
@@ -103,3 +105,13 @@ def test_concat_datasets():
     cortex_dataset_2.subsample_genes(subset_genes=np.arange(100, 400))
     cortex_dataset_merged = concat_datasets(cortex_dataset_1, cortex_dataset_2)
     print("Final nb. genes : ", cortex_dataset_merged.nb_genes)
+
+
+def test_cbmc():
+    cbmc_dataset = CbmcDataset(save_path="tests/data/citeSeq/")
+    run_benchmarks(cbmc_dataset, n_epochs=1, show_batch_mixing=False)
+
+
+def test_pbmc():
+    pbmc_dataset = PbmcDataset(save_path="tests/data/citeSeq/")
+    run_benchmarks(pbmc_dataset, n_epochs=1, show_batch_mixing=False)
