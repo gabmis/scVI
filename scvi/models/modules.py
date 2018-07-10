@@ -22,10 +22,10 @@ class FCLayers(nn.Module):
                     (
                         "Layer {}".format(i),
                         nn.Sequential(
-                            nn.Dropout(p=dropout_rate),
-                            nn.Linear(n_in + sum(n_cat_list), n_out),
+                            nn.Linear(n_in + sum(self.n_cat_list), n_out),
                             nn.BatchNorm1d(n_out, eps=1e-3, momentum=0.99),
                             nn.ReLU(),
+                            nn.Dropout(p=dropout_rate),
                         ),
                     )
                     for i, (n_in, n_out) in enumerate(
