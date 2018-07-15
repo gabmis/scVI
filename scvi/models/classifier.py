@@ -10,13 +10,7 @@ from scvi.models.modules import FCLayers
 
 class Classifier(nn.Module):
     def __init__(
-        self,
-        n_input,
-        n_hidden=128,
-        n_labels=10,
-        n_layers=1,
-        dropout_rate=0.1,
-        use_cuda=False,
+        self, n_input, n_hidden=128, n_labels=10, n_layers=1, dropout_rate=0.1
     ):
         super(Classifier, self).__init__()
         self.layers = FCLayers(
@@ -30,17 +24,15 @@ class Classifier(nn.Module):
             self.layers, nn.Linear(n_hidden, n_labels), nn.Softmax(dim=-1)
         )
 
-        self.use_cuda = use_cuda and torch.cuda.is_available()
-        if self.use_cuda:
-            self.cuda()
-
     def forward(self, x):
         return self.classifier(x)
 
 
 class LinearLogRegClassifier(Linear):
-    def update_parameters(self, vae, data_loader_classification):
-        data_train, _, labels_train = get_latent_mean(vae, data_loader_classification)
+    def update_parameters(self, vae, data_loader_classification, use_cuda=True):
+        data_train, _, labels_train = get_latent_mean(
+            vae, data_loader_classification, use_cuda=use_cuda
+        )
         log_reg = LogisticRegression()
         log_reg.fit(data_train, labels_train)
 
