@@ -5,8 +5,8 @@ from sklearn.manifold import TSNE
 from torch.nn import functional as F
 
 from scvi.dataset import CortexDataset
-from scvi.dataset.utils import DataLoaders
-from scvi.dataset.utils import (
+from scvi.dataset.data_loaders import DataLoaders
+from scvi.dataset.data_loaders import (
     TrainTestDataLoaders,
     AlternateSemiSupervisedDataLoaders,
     JointSemiSupervisedDataLoaders,
