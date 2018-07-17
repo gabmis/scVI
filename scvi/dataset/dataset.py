@@ -27,6 +27,8 @@ class GeneExpressionDataset(Dataset):
         labels,
         gene_names=None,
         cell_types=None,
+        x_coord=None,
+        y_coord=None,
     ):
         # Args:
         # Xs: a list of numpy tensors with .shape[1] identical (total_size*nb_genes)
@@ -39,6 +41,7 @@ class GeneExpressionDataset(Dataset):
         self.local_vars = local_vars
         self.batch_indices, self.n_batches = arrange_categories(batch_indices)
         self.labels, self.n_labels = arrange_categories(labels)
+        self.x_coord, self.y_coord = x_coord, y_coord
 
         if gene_names is not None:
             assert self.nb_genes == len(gene_names)

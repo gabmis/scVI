@@ -20,6 +20,10 @@ from scvi.dataset import (
     CbmcDataset,
     PbmcDataset,
     SyntheticDataset,
+    SeqfishDataset,
+    SmfishDataset,
+    BreastCancerDataset,
+    MouseOBDataset,
     GeneExpressionDataset,
 )
 from scvi.inference import (
@@ -226,3 +230,23 @@ def test_filter_and_concat_datasets():
 
     synthetic_dataset_1.subsample_cells(50)
     assert len(synthetic_dataset_1) == 50
+
+
+def test_seqfish():
+    seqfish_dataset = SeqfishDataset(save_path="tests/data/")
+    base_benchmark(seqfish_dataset)
+
+
+def test_breast_cancer():
+    breast_cancer_dataset = BreastCancerDataset(save_path="tests/data/")
+    base_benchmark(breast_cancer_dataset)
+
+
+def test_mouseob():
+    mouseob_dataset = MouseOBDataset(save_path="tests/data/")
+    base_benchmark(mouseob_dataset)
+
+
+def test_smfish():
+    smfish_dataset = SmfishDataset(save_path="tests/data/")
+    base_benchmark(smfish_dataset)
