@@ -26,6 +26,23 @@ plt.switch_backend("agg")
 
 
 class VariationalInference(Inference):
+    r"""The VariationalInference class for the unsupervised training of an autoencoder.
+
+    Args:
+        :model: A model instance from class ``VAE``, ``VAEC``, ``SVAEC``, ...
+        :gene_dataset: A gene_dataset instance like ``CortexDataset()``
+        :train_size: The train size, either a float between 0 and 1 or and integer for the number of training samples
+         to use Default: ``0.8``.
+        :**kwargs: Other keywords arguments from the general Inference class.
+
+    Examples:
+        >>> gene_dataset = CortexDataset()
+        >>> vae = VAE(gene_dataset.nb_genes, n_batch=gene_dataset.n_batches * False,
+        ... n_labels=gene_dataset.n_labels)
+
+        >>> infer = VariationalInference(gene_dataset, vae, train_size=0.5)
+        >>> infer.fit(n_epochs=20, lr=1e-3)
+    """
     default_metrics_to_monitor = ["ll"]
 
     def __init__(self, model, gene_dataset, train_size=0.8, **kwargs):
@@ -116,21 +133,55 @@ class VariationalInference(Inference):
         )
         if latent.shape[1] != 2:
             latent = TSNE().fit_transform(latent[idx_t_sne])
-        plt.figure(figsize=(10, 10))
         if not color_by:
-            plt.scatter(latent[:, 0], latent[:, 1], edgecolors="none")
+            plt.figure(figsize=(10, 10))
+            plt.scatter(latent[:, 0], latent[:, 1])
         else:
-            if color_by == "labels":
-                indices = labels.ravel()
-            elif color_by == "batches":
-                indices = batch_indices.ravel()
-            for i in range(len(np.unique(indices))):
-                plt.scatter(
-                    latent[indices == i, 0],
-                    latent[indices == i, 1],
-                    label=str(i),
-                    edgecolors="none",
+            batch_indices = batch_indices[idx_t_sne].ravel()
+            labels = labels[idx_t_sne].ravel()
+            if color_by == "batches" or color_by == "labels":
+                indices = batch_indices if color_by == "batches" else labels
+                n = (
+                    self.gene_dataset.n_batches
+                    if color_by == "batches"
+                    else self.gene_dataset.n_labels
                 )
+                if hasattr(self.gene_dataset, "cell_types") and color_by == "labels":
+                    plt_labels = self.gene_dataset.cell_types
+                else:
+                    plt_labels = [str(i) for i in range(len(np.unique(indices)))]
+                plt.figure(figsize=(10, 10))
+                for i, label in zip(range(n), plt_labels):
+                    plt.scatter(
+                        latent[indices == i, 0], latent[indices == i, 1], label=label
+                    )
+                plt.legend()
+            elif color_by == "batches and labels":
+                fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+                for i in range(self.gene_dataset.n_batches):
+                    axes[0].scatter(
+                        latent[batch_indices == i, 0],
+                        latent[batch_indices == i, 1],
+                        label=str(i),
+                    )
+                axes[0].set_title("batch coloring")
+                axes[0].axis("off")
+                axes[0].legend()
+
+                indices = labels
+                if hasattr(self.gene_dataset, "cell_types"):
+                    plt_labels = self.gene_dataset.cell_types
+                else:
+                    plt_labels = [str(i) for i in range(len(np.unique(indices)))]
+                for i, cell_type in zip(range(self.gene_dataset.n_labels), plt_labels):
+                    axes[1].scatter(
+                        latent[indices == i, 0],
+                        latent[indices == i, 1],
+                        label=cell_type,
+                    )
+                axes[1].set_title("label coloring")
+                axes[1].axis("off")
+                axes[1].legend()
         plt.axis("off")
         plt.tight_layout()
         if save_name:
@@ -138,6 +189,9 @@ class VariationalInference(Inference):
 
 
 class SemiSupervisedVariationalInference(VariationalInference):
+    r"""The abstract SemiSupervisedVariationalInference class for the semi-supervised training of an autoencoder.
+    This parent class is inherited to specify the different training schemes for semi-supervised learning
+    """
     default_metrics_to_monitor = VariationalInference.default_metrics_to_monitor + [
         "accuracy"
     ]
@@ -172,6 +226,23 @@ class SemiSupervisedVariationalInference(VariationalInference):
 
 
 class AlternateSemiSupervisedVariationalInference(SemiSupervisedVariationalInference):
+    r"""The AlternateSemiSupervisedVariationalInference class for the semi-supervised training of an autoencoder.
+
+    Args:
+        :model: A model instance from class ``VAEC``, ``SVAEC``, ...
+        :gene_dataset: A gene_dataset instance with pre-annotations like ``CortexDataset()``
+        :n_labelled_samples_per_class: The number of labelled training samples per class. Default: ``50``.
+        :**kwargs: Other keywords arguments from the general Inference class.
+
+    Examples:
+        >>> gene_dataset = CortexDataset()
+        >>> svaec = SVAEC(gene_dataset.nb_genes, n_batch=gene_dataset.n_batches * False,
+        ... n_labels=gene_dataset.n_labels)
+
+        >>> infer = AlternateSemiSupervisedVariationalInference(gene_dataset, svaec, n_labelled_samples_per_class=10)
+        >>> infer.fit(n_epochs=20, lr=1e-3)
+    """
+
     def __init__(
         self,
         model,
@@ -208,6 +279,23 @@ class AlternateSemiSupervisedVariationalInference(SemiSupervisedVariationalInfer
 
 
 class JointSemiSupervisedVariationalInference(SemiSupervisedVariationalInference):
+    r"""The JointSemiSupervisedVariationalInference class for the semi-supervised training of an autoencoder.
+
+    Args:
+        :model: A model instance from class ``VAEC``, ``SVAEC``, ...
+        :gene_dataset: A gene_dataset instance with pre-annotations like ``CortexDataset()``
+        :n_labelled_samples_per_class: The number of labelled training samples per class. Default: ``50``.
+        :**kwargs: Other keywords arguments from the general Inference class.
+
+    Examples:
+        >>> gene_dataset = CortexDataset()
+        >>> svaec = SVAEC(gene_dataset.nb_genes, n_batch=gene_dataset.n_batches * False,
+        ... n_labels=gene_dataset.n_labels)
+
+        >>> infer = JointSemiSupervisedVariationalInference(gene_dataset, svaec, n_labelled_samples_per_class=10)
+        >>> infer.fit(n_epochs=20, lr=1e-3)
+    """
+
     def __init__(
         self,
         model,
