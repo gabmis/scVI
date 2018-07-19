@@ -1,6 +1,7 @@
 from itertools import cycle
 
 import numpy as np
+import torch
 from sklearn.model_selection._split import _validate_shuffle_split
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import (
@@ -10,19 +11,33 @@ from torch.utils.data.sampler import (
 )
 
 
+class DataLoaderWrapper(DataLoader):
+    def __init__(self, dataset, use_cuda=True, **data_loaders_kwargs):
+        self.use_cuda = use_cuda and torch.cuda.is_available()
+        super(DataLoaderWrapper, self).__init__(dataset, **data_loaders_kwargs)
+
+    def to_cuda(self, tensors):
+        tensors = (tensors[0].type(torch.float32),) + tuple(tensors[1:])
+        return [t.cuda(async=self.use_cuda) if self.use_cuda else t for t in tensors]
+
+    def __iter__(self):
+        return map(self.to_cuda, super(DataLoaderWrapper, self).__iter__())
+
+
 class DataLoaders:
     to_monitor = []
     data_loaders_loop = []
 
-    def __init__(self, gene_dataset, **data_loaders_kwargs):
+    def __init__(self, gene_dataset, use_cuda=True, **data_loaders_kwargs):
         """
         :param gene_dataset: a GeneExpressionDataset instance
         :param data_loaders_kwargs: any additional keyword arguments to pass to the data_loaders at .init
         """
         self.gene_dataset = gene_dataset
+        self.use_cuda = use_cuda
         self.data_loaders_kwargs = {
             "batch_size": 128,
-            "pin_memory": True,
+            "pin_memory": use_cuda,
             "collate_fn": self.gene_dataset.collate_fn,
         }
         self.data_loaders_kwargs.update(data_loaders_kwargs)
@@ -62,8 +77,11 @@ class DataLoaders:
                 sampler = SequentialSampler(self.gene_dataset)
         else:
             sampler = SubsetRandomSampler(indices)
-        return DataLoader(
-            self.gene_dataset, sampler=sampler, **self.data_loaders_kwargs
+        return DataLoaderWrapper(
+            self.gene_dataset,
+            use_cuda=self.use_cuda,
+            sampler=sampler,
+            **self.data_loaders_kwargs
         )
 
     @staticmethod
@@ -129,13 +147,14 @@ class SemiSupervisedDataLoaders(DataLoaders):
         gene_dataset,
         n_labelled_samples_per_class=50,
         seed=0,
+        use_cuda=True,
         **data_loaders_kwargs
     ):
         """
         :param n_labelled_samples_per_class: number of labelled samples per class
         """
         super(SemiSupervisedDataLoaders, self).__init__(
-            gene_dataset, **data_loaders_kwargs
+            gene_dataset, use_cuda=use_cuda, **data_loaders_kwargs
         )
 
         n_labelled_samples_per_class_array = [
@@ -181,7 +200,9 @@ class AlternateSemiSupervisedDataLoaders(SemiSupervisedDataLoaders):
 
     def classifier_data_loaders(self):
         data_loaders = DataLoaders(
-            gene_dataset=self.gene_dataset, **self.data_loaders_kwargs
+            gene_dataset=self.gene_dataset,
+            use_cuda=self.use_cuda,
+            **self.data_loaders_kwargs
         )
         data_loaders.data_loaders_dict.update(
             {"train": self["labelled"], "test": self["unlabelled"]}

@@ -1,17 +1,11 @@
 import numpy as np
 import torch
 
-from scvi.utils import to_cuda, no_grad, eval_modules
 
-
-@no_grad()
-@eval_modules()
-def imputation(vae, data_loader, rate=0.1, use_cuda=True):
+def imputation(vae, data_loader, rate=0.1):
     distance_list = torch.FloatTensor([])
     for tensors in data_loader:
-        tensors = to_cuda(tensors, use_cuda=use_cuda)
         sample_batch, local_l_mean, local_l_var, batch_index, labels = tensors
-        sample_batch = sample_batch.type(torch.float32)
         dropout_batch = sample_batch.clone()
         indices = torch.nonzero(dropout_batch)
         i, j = indices[:, 0], indices[:, 1]
@@ -20,7 +14,7 @@ def imputation(vae, data_loader, rate=0.1, use_cuda=True):
         )
         dropout_batch[i[ix], j[ix]] *= 0
 
-        ix, i, j = to_cuda([ix, i, j], use_cuda=use_cuda, async=False)
+        ix, i, j = [t.to(sample_batch.device) for t in [ix, i, j]]
         px_rate = vae.get_sample_rate(dropout_batch, batch_index=batch_index, y=labels)
         distance_list = torch.cat(
             [
