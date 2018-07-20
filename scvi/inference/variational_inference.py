@@ -295,7 +295,8 @@ class AlternateSemiSupervisedVariationalInference(SemiSupervisedVariationalInfer
             model.classifier,
             gene_dataset,
             metrics_to_monitor=[],
-            benchmark=True,
+            verbose=True,
+            frequency=0,
             data_loaders=self.data_loaders.classifier_data_loaders(),
             sampling_model=self.model,
         )

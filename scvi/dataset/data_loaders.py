@@ -204,6 +204,7 @@ class AlternateSemiSupervisedDataLoaders(SemiSupervisedDataLoaders):
             use_cuda=self.use_cuda,
             **self.data_loaders_kwargs
         )
+        data_loaders.data_loaders_loop = ["train"]
         data_loaders.data_loaders_dict.update(
             {"train": self["labelled"], "test": self["unlabelled"]}
         )
