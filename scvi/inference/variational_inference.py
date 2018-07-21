@@ -45,7 +45,7 @@ class VariationalInference(Inference):
         ... n_labels=gene_dataset.n_labels)
 
         >>> infer = VariationalInference(gene_dataset, vae, train_size=0.5)
-        >>> infer.fit(n_epochs=20, lr=1e-3)
+        >>> infer.train(n_epochs=20, lr=1e-3)
     """
     default_metrics_to_monitor = ["ll"]
 
@@ -269,7 +269,7 @@ class AlternateSemiSupervisedVariationalInference(SemiSupervisedVariationalInfer
         ... n_labels=gene_dataset.n_labels)
 
         >>> infer = AlternateSemiSupervisedVariationalInference(gene_dataset, svaec, n_labelled_samples_per_class=10)
-        >>> infer.fit(n_epochs=20, lr=1e-3)
+        >>> infer.train(n_epochs=20, lr=1e-3)
     """
 
     def __init__(
@@ -302,7 +302,7 @@ class AlternateSemiSupervisedVariationalInference(SemiSupervisedVariationalInfer
         )
 
     def on_epoch_end(self):
-        self.classifier_inference.fit(
+        self.classifier_inference.train(
             self.n_epochs_classifier, lr=self.lr_classification
         )
         return super(AlternateSemiSupervisedVariationalInference, self).on_epoch_end()
@@ -323,7 +323,7 @@ class JointSemiSupervisedVariationalInference(SemiSupervisedVariationalInference
         ... n_labels=gene_dataset.n_labels)
 
         >>> infer = JointSemiSupervisedVariationalInference(gene_dataset, svaec, n_labelled_samples_per_class=10)
-        >>> infer.fit(n_epochs=20, lr=1e-3)
+        >>> infer.train(n_epochs=20, lr=1e-3)
     """
 
     def __init__(
