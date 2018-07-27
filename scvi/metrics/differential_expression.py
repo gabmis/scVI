@@ -19,7 +19,11 @@ def de_stats(vae, data_loader, M_sampling=100):
         batch_index = batch_index.repeat(1, M_sampling).view(-1, 1)
         labels = labels.repeat(1, M_sampling).view(-1, 1)
         px_scales += [
-            vae.get_sample_scale(sample_batch, batch_index=batch_index, y=labels).cpu()
+            (
+                vae.get_sample_scale(
+                    sample_batch, batch_index=batch_index, y=labels
+                ).squeeze()
+            ).cpu()
         ]
         all_labels += [labels.cpu()]
 
