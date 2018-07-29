@@ -282,6 +282,7 @@ def test_nb_not_zinb():
         synthetic_dataset.nb_genes,
         synthetic_dataset.n_batches,
         synthetic_dataset.n_labels,
+        labels_groups=[0, 0, 1],
         reconstruction_loss="nb",
     )
     infer_synthetic_svaec = JointSemiSupervisedVariationalInference(
