@@ -18,7 +18,7 @@ available_datasets = {
         "frozen_pbmc_donor_b",
         "frozen_pbmc_donor_c",
         "fresh_68k_pbmc_donor_a",
-        "cd14_monocyte",
+        "cd14_monocytes",
         "b_cells",
         "cd34",
         "cd56_nk",
@@ -61,15 +61,7 @@ class Dataset10X(GeneExpressionDataset):
 
     """
 
-    def __init__(
-        self,
-        filename,
-        save_path="data/",
-        type="filtered",
-        new_n_genes=3000,
-        subset_genes=None,
-        dense=False,
-    ):
+    def __init__(self, filename, save_path="data/", type="filtered", dense=False):
         group = to_groups[filename]
         self.url = (
             "http://cf.10xgenomics.com/samples/cell-exp/%s/%s/%s_%s_gene_bc_matrices.tar.gz"
@@ -85,9 +77,6 @@ class Dataset10X(GeneExpressionDataset):
             *GeneExpressionDataset.get_attributes_from_matrix(expression_data),
             gene_names=gene_names
         )
-
-        if new_n_genes is not None:
-            self.subsample_genes(new_n_genes, subset_genes)
 
     def preprocess(self):
         print("Preprocessing dataset")
