@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from sklearn.utils.linear_assignment_ import linear_assignment
+from sklearn import neighbors
 
 Accuracy = namedtuple(
     "Accuracy", ["unweighted", "weighted", "worst", "accuracy_classes"]
@@ -98,15 +99,8 @@ def compute_accuracy_svc(
     svc = SVC(max_iter=max_iter)
 
     clf = GridSearchCV(svc, param_grid, verbose=verbose)
-    clf.fit(data_train, labels_train)
-
-    # Predicting the labels
-    y_pred_test = clf.predict(data_test)
-    y_pred_train = clf.predict(data_train)
-
-    return (
-        compute_accuracy_tuple(labels_train, y_pred_train),
-        compute_accuracy_tuple(labels_test, y_pred_test),
+    return compute_accuracy_classifier(
+        clf, data_train, labels_train, data_test, labels_test
     )
 
 
@@ -120,13 +114,28 @@ def compute_accuracy_rf(
     rf = RandomForestClassifier(max_depth=2, random_state=0)
 
     clf = GridSearchCV(rf, param_grid, verbose=verbose)
-    clf.fit(data_train, labels_train)
+    return compute_accuracy_classifier(
+        clf, data_train, labels_train, data_test, labels_test
+    )
 
+
+def compute_accuracy_nn(data_train, labels_train, data_test, labels_test, k=5):
+    clf = neighbors.KNeighborsClassifier(k, weights="distance")
+    return compute_accuracy_classifier(
+        clf, data_train, labels_train, data_test, labels_test
+    )
+
+
+def compute_accuracy_classifier(clf, data_train, labels_train, data_test, labels_test):
+    clf.fit(data_train, labels_train)
     # Predicting the labels
     y_pred_test = clf.predict(data_test)
     y_pred_train = clf.predict(data_train)
 
     return (
-        compute_accuracy_tuple(y_pred_train, labels_train),
-        compute_accuracy_tuple(y_pred_test, labels_test),
+        (
+            compute_accuracy_tuple(labels_train, y_pred_train),
+            compute_accuracy_tuple(labels_test, y_pred_test),
+        ),
+        y_pred_test,
     )
