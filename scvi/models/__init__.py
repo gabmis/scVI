@@ -1,6 +1,7 @@
-from .svaec import SVAEC
+from .classifier import Classifier
+from .scanvi import SCANVI
 from .vae import VAE
-from .vaec import VAEC
 from .vae_fish import VAEF
+from .vaec import VAEC
 
-__all__ = ["VAEC", "SVAEC", "VAE", "VAEF"]
+__all__ = ["SCANVI", "VAEC", "VAE", "VAEF", "Classifier"]

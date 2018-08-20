@@ -1,20 +1,24 @@
-from .inference import Inference
-from .classifier_inference import ClassifierInference
-from .variational_inference import (
-    VariationalInference,
-    AlternateSemiSupervisedVariationalInference,
-    JointSemiSupervisedVariationalInference,
-    VariationalInferenceFish,
+from .trainer import Trainer
+from .inference import UnsupervisedTrainer, TrainerFish, AdapterTrainer
+from .posterior import Posterior
+from .annotation import (
+    JointSemiSupervisedTrainer,
+    SemiSupervisedTrainer,
+    AlternateSemiSupervisedTrainer,
+    ClassifierTrainer,
 )
-from .experimental_inference import adversarial_wrapper, mmd_wrapper
+from .experimental_inference import adversarial_wrapper
+
 
 __all__ = [
-    "Inference",
-    "ClassifierInference",
-    "VariationalInference",
-    "AlternateSemiSupervisedVariationalInference",
-    "JointSemiSupervisedVariationalInference",
-    "VariationalInferenceFish",
+    "UnsupervisedTrainer",
+    "Trainer",
+    "Posterior",
+    "TrainerFish",
+    "AdapterTrainer",
     "adversarial_wrapper",
-    "mmd_wrapper",
+    "JointSemiSupervisedTrainer",
+    "SemiSupervisedTrainer",
+    "AlternateSemiSupervisedTrainer",
+    "ClassifierTrainer",
 ]

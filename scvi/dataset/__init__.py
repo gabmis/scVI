@@ -11,7 +11,6 @@ from .anndata import AnnDataset
 from .csv import CsvDataset, BreastCancerDataset, MouseOBDataset
 from .seqfish import SeqfishDataset
 from .smfish import SmfishDataset
-from .data_loaders import DataLoaders
 
 __all__ = [
     "SyntheticDataset",
@@ -32,6 +31,5 @@ __all__ = [
     "SmfishDataset",
     "BreastCancerDataset",
     "MouseOBDataset",
-    "DataLoaders",
     "PurifiedPBMCDataset",
 ]

@@ -22,7 +22,7 @@ from scvi.dataset import (
     PbmcDataset,
 )
 from scvi.inference import VariationalInference, JointSemiSupervisedVariationalInference
-from scvi.models import VAE, VAEC, SVAEC
+from scvi.models import VAE, VAEC, SCANVI
 
 
 def load_datasets(dataset_name, save_path="data/", url=None):
@@ -71,7 +71,7 @@ def benchmark_hyperparameters(gene_dataset):
     return hyperparameters
 
 
-available_models = {"VAE": VAE, "VAEC": VAEC, "SVAEC": SVAEC}
+available_models = {"VAE": VAE, "VAEC": VAEC, "SVAEC": SCANVI}
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
