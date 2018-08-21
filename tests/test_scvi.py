@@ -51,7 +51,6 @@ def test_cortex():
     trainer_cortex_vae.train(n_epochs=1)
     trainer_cortex_vae.train_set.ll()
     trainer_cortex_vae.train_set.differential_expression_stats()
-    trainer_cortex_vae.test_set.differential_expression()
 
     trainer_cortex_vae.corrupt_posteriors(corruption="binomial")
     trainer_cortex_vae.corrupt_posteriors()
@@ -103,6 +102,7 @@ def test_cortex():
 
 def test_synthetic_1():
     synthetic_dataset = SyntheticDataset()
+    synthetic_dataset.cell_types = np.array(["A", "B", "C"])
     svaec = SCANVI(
         synthetic_dataset.nb_genes,
         synthetic_dataset.n_batches,
@@ -122,6 +122,10 @@ def test_synthetic_1():
     trainer_synthetic_svaec.labelled_set.clustering_scores()
     trainer_synthetic_svaec.labelled_set.clustering_scores(prediction_algorithm="gmm")
     trainer_synthetic_svaec.unlabelled_set.unsupervised_accuracy()
+    trainer_synthetic_svaec.unlabelled_set.differential_expression_score(
+        "B", "C", genes=["2", "4"]
+    )
+    trainer_synthetic_svaec.unlabelled_set.differential_expression_table()
 
 
 def test_synthetic_2():
