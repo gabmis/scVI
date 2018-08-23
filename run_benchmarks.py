@@ -21,7 +21,7 @@ from scvi.dataset import (
     CbmcDataset,
     PbmcDataset,
 )
-from scvi.inference import VariationalInference, JointSemiSupervisedVariationalInference
+from scvi.inference import UnsupervisedTrainer, SemiSupervisedTrainer
 from scvi.models import VAE, VAEC, SCANVI
 
 
@@ -129,10 +129,8 @@ if __name__ == "__main__":
         model = available_models[args.model](
             dataset.nb_genes, dataset.n_batches * args.nobatches, dataset.n_labels
         )
-        inference_cls = (
-            VariationalInference
-            if args.model == "VAE"
-            else JointSemiSupervisedVariationalInference
+        trainer_cls = (
+            UnsupervisedTrainer if args.model == "VAE" else SemiSupervisedTrainer
         )
-        infer = inference_cls(model, dataset, use_cuda=use_cuda)
-        infer.train(n_epochs=n_epochs)
+        trainer = trainer_cls(model, dataset, use_cuda=use_cuda)
+        trainer.train(n_epochs=n_epochs)
