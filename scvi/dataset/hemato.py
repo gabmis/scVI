@@ -1,8 +1,11 @@
-import pandas as pd
-import numpy as np
-from zipfile import ZipFile
-from .dataset import GeneExpressionDataset
+import os
 from pathlib import Path
+from zipfile import ZipFile
+
+import numpy as np
+import pandas as pd
+
+from .dataset import GeneExpressionDataset
 
 
 class HematoDataset(GeneExpressionDataset):
@@ -43,14 +46,25 @@ class HematoDataset(GeneExpressionDataset):
             *GeneExpressionDataset.get_attributes_from_matrix(
                 expression_data, labels=labels
             ),
-            gene_names=gene_names
+            gene_names=gene_names,
         )
+
+        self.cell_types_levels = [
+            "Erythroid",
+            "Granulocytic Neutrophil",
+            "Lymphocytic",
+            "Dendritic",
+            "Megakaryocytic",
+            "Monocytic",
+            "Basophilic",
+        ]
 
     def preprocess(self):
         print("Preprocessing Hemato data")
 
-        with ZipFile(self.save_path + "data.zip", "r") as zip:
-            zip.extractall(path=Path(self.save_path).parent)
+        if not os.path.exists(self.save_path + self.download_names[0]):
+            with ZipFile(self.save_path + "data.zip", "r") as zip:
+                zip.extractall(path=Path(self.save_path).parent)
         raw_counts = pd.read_csv(
             self.save_path + self.download_names[0], compression="gzip"
         )
@@ -72,7 +86,7 @@ class HematoDataset(GeneExpressionDataset):
         x_spring = data["x_spring"].values
         y_spring = data["y_spring"].values
 
-        meta = data[
+        self.meta = data[
             ["Potential", "Pr_Er", "Pr_Gr", "Pr_Ly", "Pr_DC", "Pr_Mk", "Pr_Mo", "Pr_Ba"]
         ]
 
@@ -82,7 +96,7 @@ class HematoDataset(GeneExpressionDataset):
             p[p == 1] = np.max(p[p < 1])
             return np.log(p / (1 - p))
 
-        labels = logit(meta.iloc[:, 2]) - logit(meta.iloc[:, 1])
+        labels = logit(self.meta.iloc[:, 2]) - logit(self.meta.iloc[:, 1])
         expression_data = expression_data.values
 
         print("Finished preprocessing Hemato data")

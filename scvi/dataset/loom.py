@@ -98,3 +98,20 @@ class RetinaDataset(LoomDataset):
             save_path=save_path,
             url="https://github.com/YosefLab/scVI-data/raw/master/retina.loom",
         )
+        self.cell_types = [
+            "RBC",
+            "MG",
+            "BC5A",
+            "BC7",
+            "BC6",
+            "BC5C",
+            "BC1A",
+            "BC3B",
+            "BC1B",
+            "BC2",
+            "BC5D",
+            "BC3A",
+            "BC5B",
+            "BC4",
+            "BC8_9",
+        ]

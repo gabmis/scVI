@@ -4,9 +4,11 @@
 # For dataset name (eg. 'pbmc8k', 'pbmc4k', ect...) their are two available specifications,
 # either filtered or raw data
 import os
+import pickle
 import tarfile
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 from scipy import io
 from scipy.sparse import csr_matrix
 
@@ -97,7 +99,10 @@ class Dataset10X(GeneExpressionDataset):
         )
         path += os.listdir(path)[0] + "/"
         genes_info = pd.read_csv(path + "genes.tsv", sep="\t", header=None)
-        gene_names = genes_info.values[:, 1].astype(np.str).ravel()
+        gene_names = genes_info.values[:, 0].astype(np.str).ravel()
+        if os.path.exists(path + "barcodes.tsv"):
+            self.barcodes = pd.read_csv(path + "barcodes.tsv", sep="\t", header=None)
+        self.gene_symbols = genes_info.values[:, 1].astype(np.str).ravel()
         expression_data = io.mmread(path + "matrix.mtx").T
         if self.dense:
             expression_data = expression_data.A
@@ -128,6 +133,27 @@ class BrainSmallDataset(Dataset10X):
     """
 
     def __init__(self, save_path="data/"):
-        super(BrainSmallDataset, self).__init__(
-            filename="neuron_9k", save_path=save_path
+        dataset = Dataset10X(filename="neuron_9k", save_path=save_path)
+
+        self.save_path = save_path + "neuron_9k/"
+        self.urls = [
+            "https://github.com/YosefLab/scVI-data/raw/master/brain_small_metadata.pickle"
+        ]
+        self.download_names = ["brain_small_metadata.pickle"]
+        self.download()
+
+        metadata = pickle.load(
+            open(self.save_path + "brain_small_metadata.pickle", "rb")
+        )
+        labels = metadata["clusters"].loc[dataset.barcodes.values.ravel()] - 1
+
+        self.raw_qc = metadata["raw_qc"].loc[dataset.barcodes.values.ravel()]
+        self.qc_names = self.raw_qc.columns
+        self.qc = self.raw_qc.values
+        super(Dataset10X, self).__init__(
+            dataset.X,
+            dataset.local_means,
+            dataset.local_vars,
+            batch_indices=dataset.batch_indices,
+            labels=labels,
         )

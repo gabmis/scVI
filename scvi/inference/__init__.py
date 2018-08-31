@@ -1,22 +1,20 @@
-from .trainer import Trainer
-from .inference import UnsupervisedTrainer, TrainerFish, AdapterTrainer
 from .posterior import Posterior
+from .trainer import Trainer
+from .inference import UnsupervisedTrainer, AdapterTrainer
 from .annotation import (
     JointSemiSupervisedTrainer,
     SemiSupervisedTrainer,
     AlternateSemiSupervisedTrainer,
     ClassifierTrainer,
 )
-from .experimental_inference import adversarial_wrapper
-
+from .fish import TrainerFish
 
 __all__ = [
-    "UnsupervisedTrainer",
     "Trainer",
     "Posterior",
     "TrainerFish",
+    "UnsupervisedTrainer",
     "AdapterTrainer",
-    "adversarial_wrapper",
     "JointSemiSupervisedTrainer",
     "SemiSupervisedTrainer",
     "AlternateSemiSupervisedTrainer",

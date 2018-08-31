@@ -2,18 +2,19 @@ import numpy as np
 from sklearn.decomposition import PCA
 
 from scvi.dataset import CortexDataset
-from scvi.inference import UnsupervisedTrainer, TrainerFish, adversarial_wrapper
-from scvi.inference.posterior import proximity_imputation, compute_accuracy_nn
+from scvi.inference import UnsupervisedTrainer, TrainerFish
+from scvi.inference.annotation import compute_accuracy_nn
+from scvi.inference.posterior import proximity_imputation
 from scvi.models import VAE, VAEF
 
 
-def cortex_benchmark(n_epochs=250, use_cuda=True):
-    cortex_dataset = CortexDataset()
+def cortex_benchmark(n_epochs=250, use_cuda=True, save_path="data/"):
+    cortex_dataset = CortexDataset(save_path=save_path)
     vae = VAE(cortex_dataset.nb_genes)
     trainer_cortex_vae = UnsupervisedTrainer(vae, cortex_dataset, use_cuda=use_cuda)
     trainer_cortex_vae.train(n_epochs=n_epochs)
     trainer_cortex_vae.train_set.differential_expression_score(
-        "oligodendrocytes", "pyramidalCA1", genes=["THY1", "MBP"]
+        "oligodendrocytes", "pyramidal CA1", genes=["THY1", "MBP"]
     )
 
     trainer_cortex_vae.test_set.ll()  # assert ~ 1200
@@ -38,24 +39,24 @@ def benchmark(dataset, n_epochs=250, use_cuda=True):
     return trainer
 
 
-def harmonization_benchmarks(n_epochs=1, use_cuda=True):
+def harmonization_benchmarks(n_epochs=1, use_cuda=True, save_path="data/"):
     # retina_benchmark(n_epochs=n_epochs)
     pass
 
 
-def annotation_benchmarks(n_epochs=1, use_cuda=True):
+def annotation_benchmarks(n_epochs=1, use_cuda=True, save_path="data/"):
     # some cortex annotation benchmark
     pass
 
 
-def all_benchmarks(n_epochs=250, use_cuda=True):
-    cortex_benchmark(n_epochs=n_epochs, use_cuda=use_cuda)
+def all_benchmarks(n_epochs=250, use_cuda=True, save_path="data/"):
+    cortex_benchmark(n_epochs=n_epochs, use_cuda=use_cuda, save_path=save_path)
 
-    harmonization_benchmarks(n_epochs=n_epochs, use_cuda=use_cuda)
-    annotation_benchmarks(n_epochs=n_epochs, use_cuda=use_cuda)
+    harmonization_benchmarks(n_epochs=n_epochs, use_cuda=use_cuda, save_path=save_path)
+    annotation_benchmarks(n_epochs=n_epochs, use_cuda=use_cuda, save_path=save_path)
 
 
-def benchamrk_fish_scrna(gene_dataset_seq, gene_dataset_fish):
+def benchmark_fish_scrna(gene_dataset_seq, gene_dataset_fish):
     gene_names = gene_dataset_fish.gene_names
     indexes_to_keep = np.arange(len(gene_names))
     vae = VAEF(
@@ -84,7 +85,6 @@ def benchamrk_fish_scrna(gene_dataset_seq, gene_dataset_fish):
         cl_ratio=0,
         n_epochs_cl=100,
     )
-    trainer = adversarial_wrapper(trainer, scale=50, mode="smFISH")
     trainer.train(n_epochs=1, lr=0.0008)
     concatenated_matrix = np.concatenate(
         (

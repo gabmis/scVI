@@ -108,7 +108,6 @@ class VAEF(VAE):
             n_layers=n_layers_decoder,
             n_hidden=n_hidden,
             n_cat_list=[n_batch],
-            dropout_rate=dropout_rate,
         )
 
         self.classifier = Classifier(

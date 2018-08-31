@@ -3,8 +3,8 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.distributions import Normal
 from torch import logsumexp
+from torch.distributions import Normal
 
 
 def compute_log_likelihood(vae, posterior, **kwargs):
@@ -100,8 +100,8 @@ def log_zinb_positive(x, mu, theta, pi, eps=1e-8):
         - theta * torch.log(theta + mu + eps)
         + x * torch.log(mu + eps)
         - x * torch.log(theta + mu + eps)
-        + torch.lgamma(x + theta + eps)
-        - torch.lgamma(theta + eps)
+        + torch.lgamma(x + theta)
+        - torch.lgamma(theta)
         - torch.lgamma(x + 1)
     )
 
