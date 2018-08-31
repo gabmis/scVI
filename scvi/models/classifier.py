@@ -14,6 +14,7 @@ class Classifier(nn.Module):
             n_layers=n_layers,
             n_hidden=n_hidden,
             dropout_rate=dropout_rate,
+            use_batch_norm=True,
         )
         self.classifier = nn.Sequential(
             self.layers, nn.Linear(n_hidden, n_labels), nn.Softmax(dim=-1)

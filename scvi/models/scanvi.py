@@ -64,6 +64,7 @@ class SCANVI(VAE):
         y_prior=None,
         labels_groups: Sequence[int] = None,
         use_labels_groups: bool = False,
+        classifier_parameters: dict = dict(),
     ):
         super(SCANVI, self).__init__(
             n_input,
@@ -80,10 +81,13 @@ class SCANVI(VAE):
         self.n_labels = n_labels
         self.n_latent_layers = 2
         # Classifier takes n_latent as input
-
-        self.classifier = Classifier(
-            n_latent, n_hidden, self.n_labels, n_layers, dropout_rate
-        )
+        cls_parameters = {
+            "n_layers": n_layers,
+            "n_hidden": n_hidden,
+            "dropout_rate": dropout_rate,
+        }
+        cls_parameters.update(classifier_parameters)
+        self.classifier = Classifier(n_latent, n_labels=n_labels, **cls_parameters)
 
         self.encoder_z2_z1 = Encoder(
             n_latent,
@@ -133,7 +137,12 @@ class SCANVI(VAE):
             )
 
     def classify(self, x):
-        z = self.sample_from_posterior_z(x)
+        if self.log_variational:
+            x = torch.log(1 + x)
+        qz_m, _, z = self.z_encoder(x)
+        z = (
+            qz_m
+        )  # We classify using the inferred mean parameter of z_1 in the latent space
         if self.use_labels_groups:
             w_g = self.classifier_groups(z)
             unw_y = self.classifier(z)

@@ -29,6 +29,7 @@ class FCLayers(nn.Module):
         n_layers: int = 1,
         n_hidden: int = 128,
         dropout_rate: float = 0.1,
+        use_batch_norm=True,
     ):
         super(FCLayers, self).__init__()
         layers_dim = [n_in] + (n_layers - 1) * [n_hidden] + [n_out]
@@ -46,7 +47,9 @@ class FCLayers(nn.Module):
                         "Layer {}".format(i),
                         nn.Sequential(
                             nn.Linear(n_in + sum(self.n_cat_list), n_out),
-                            nn.BatchNorm1d(n_out, momentum=0.01, eps=0.001),
+                            nn.BatchNorm1d(n_out, momentum=0.01, eps=0.001)
+                            if use_batch_norm
+                            else None,
                             nn.ReLU(),
                             nn.Dropout(p=dropout_rate) if dropout_rate > 0 else None,
                         ),
