@@ -307,7 +307,7 @@ class Posterior:
                 sample_batch, batch_index=batch_index, y=labels, n_samples=n_samples
             )
             imputed_list += [np.array(px_rate.cpu())]
-        imputed_list = np.concatenate(imputed_list, axis=1)
+        imputed_list = np.concatenate(imputed_list)
         return imputed_list.squeeze()
 
     def generate(
