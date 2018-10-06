@@ -102,9 +102,10 @@ class GeneExpressionDataset(Dataset):
                 range(len(i)), int(np.floor(rate * len(i))), replace=False
             )
             i, j = i[ix], j[ix]
-            corrupted = self.X[i, j] * np.random.binomial(
-                n=np.ones(len(ix), dtype=np.int32), p=0.9
-            )  # maybe rate
+            corrupted = np.multiply(
+                self.X[i, j],
+                np.random.binomial(n=np.ones(len(ix), dtype=np.int32), p=0.9),
+            )
         elif (
             corruption == "binomial"
         ):  # multiply the entry n with a Bin(n, 0.9) random variable.
