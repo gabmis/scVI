@@ -301,7 +301,7 @@ class Trainer:
         """
         all_dataset = self.create_posterior()
         self.model.eval()
-        ret = {"latent": [], "imputed_values": [], "batch_indices": [], "labels": []}
+        ret = {"latent": [], "imputed_values": []}
         for tensors in all_dataset:
             sample_batch, local_l_mean, local_l_var, batch_index, label = tensors
             ret["latent"] += [
@@ -312,8 +312,6 @@ class Trainer:
             ret["imputed_values"] += [
                 self.model.get_sample_rate(sample_batch, batch_index=batch_index)
             ]
-            ret["labels"] += [label]
-            ret["batch_indices"] += [batch_index]
         for key in ret.keys():
             if len(ret[key]) > 0:
                 ret[key] = np.array(torch.cat(ret[key]))

@@ -566,7 +566,9 @@ class Posterior:
             if n_batch is None:
                 n_batch = self.gene_dataset.n_batches
             if color_by == "batches" or color_by == "labels":
-                indices = batch_indices if color_by == "batches" else labels
+                indices = (
+                    batch_indices.ravel() if color_by == "batches" else labels.ravel()
+                )
                 n = n_batch if color_by == "batches" else self.gene_dataset.n_labels
                 if hasattr(self.gene_dataset, "cell_types") and color_by == "labels":
                     plt_labels = self.gene_dataset.cell_types
@@ -580,6 +582,7 @@ class Posterior:
                 plt.legend()
             elif color_by == "batches and labels":
                 fig, axes = plt.subplots(1, 2, figsize=(14, 7))
+                batch_indices = batch_indices.ravel()
                 for i in range(n_batch):
                     axes[0].scatter(
                         latent[batch_indices == i, 0],
@@ -590,7 +593,7 @@ class Posterior:
                 axes[0].axis("off")
                 axes[0].legend()
 
-                indices = labels
+                indices = labels.ravel()
                 if hasattr(self.gene_dataset, "cell_types"):
                     plt_labels = self.gene_dataset.cell_types
                 else:
