@@ -29,6 +29,7 @@ class AnnotationPosterior(Posterior):
 
     accuracy.mode = "max"
 
+    @torch.no_grad()
     def hierarchical_accuracy(self, verbose=False):
         all_y, all_y_pred = self.compute_predictions()
         acc = np.mean(all_y == all_y_pred)
@@ -43,6 +44,7 @@ class AnnotationPosterior(Posterior):
 
     accuracy.mode = "max"
 
+    @torch.no_grad()
     def compute_predictions(self):
         """
         :return: the true labels and the predicted labels
@@ -50,6 +52,7 @@ class AnnotationPosterior(Posterior):
         """
         return compute_predictions(self.model, self)
 
+    @torch.no_grad()
     def unsupervised_classification_accuracy(self, classifier=None, verbose=False):
         all_y, all_y_pred = self.compute_predictions()
         uca = unsupervised_clustering_accuracy(all_y, all_y_pred)[0]
@@ -59,6 +62,7 @@ class AnnotationPosterior(Posterior):
 
     unsupervised_classification_accuracy.mode = "max"
 
+    @torch.no_grad()
     def nn_latentspace(self, posterior):
         data_train, _, labels_train = self.get_latent()
         data_test, _, labels_test = posterior.get_latent()
@@ -261,6 +265,7 @@ class AlternateSemiSupervisedTrainer(SemiSupervisedTrainer):
         return ["full_dataset"]
 
 
+@torch.no_grad()
 def compute_predictions(model, data_loader, classifier=None):
     all_y_pred = []
     all_y = []
@@ -287,6 +292,7 @@ def compute_predictions(model, data_loader, classifier=None):
     return all_y, all_y_pred
 
 
+@torch.no_grad()
 def compute_accuracy(vae, data_loader, classifier=None):
     all_y, all_y_pred = compute_predictions(vae, data_loader, classifier=classifier)
     return np.mean(all_y == all_y_pred)
@@ -297,6 +303,7 @@ Accuracy = namedtuple(
 )
 
 
+@torch.no_grad()
 def compute_accuracy_tuple(y, y_pred):
     y = y.ravel()
     n_labels = len(np.unique(y))
@@ -319,6 +326,7 @@ def compute_accuracy_tuple(y, y_pred):
     return accuracy_named_tuple
 
 
+@torch.no_grad()
 def compute_accuracy_nn(data_train, labels_train, data_test, labels_test, k=5):
     clf = neighbors.KNeighborsClassifier(k, weights="distance")
     return compute_accuracy_classifier(
@@ -326,6 +334,7 @@ def compute_accuracy_nn(data_train, labels_train, data_test, labels_test, k=5):
     )
 
 
+@torch.no_grad()
 def compute_accuracy_classifier(clf, data_train, labels_train, data_test, labels_test):
     clf.fit(data_train, labels_train)
     # Predicting the labels
@@ -341,6 +350,7 @@ def compute_accuracy_classifier(clf, data_train, labels_train, data_test, labels
     )
 
 
+@torch.no_grad()
 def compute_accuracy_svc(
     data_train,
     labels_train,
@@ -362,6 +372,7 @@ def compute_accuracy_svc(
     )
 
 
+@torch.no_grad()
 def compute_accuracy_rf(
     data_train, labels_train, data_test, labels_test, param_grid=None, verbose=0
 ):
