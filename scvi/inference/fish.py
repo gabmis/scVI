@@ -9,12 +9,14 @@ from scvi.models.log_likelihood import compute_log_likelihood
 
 
 class FishPosterior(Posterior):
+    @torch.no_grad()
     def ll(self, verbose=False):
         ll = compute_log_likelihood(self.model, self, mode="smFISH")
         if verbose:
             print("LL Fish: %.4f" % ll)
         return ll
 
+    @torch.no_grad()
     def show_spatial_expression(
         self,
         x_coord,
