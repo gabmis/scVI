@@ -464,7 +464,7 @@ class Posterior:
             np.abs(np.concatenate(original_list) - np.concatenate(imputed_list))
         )
 
-    def imputation_benchmark(self, n_samples=8, verbose=False):
+    def imputation_benchmark(self, n_samples=8, verbose=False, title_plot="imputation"):
         original_list, imputed_list = self.imputation_list(n_samples=n_samples)
         # Median of medians for all distances
         median_score = self.imputation_score(
@@ -486,7 +486,11 @@ class Posterior:
                 % (median_score, mean_score)
             )
 
-        plot_imputation(np.concatenate(original_list), np.concatenate(imputed_list))
+        plot_imputation(
+            np.concatenate(original_list),
+            np.concatenate(imputed_list),
+            title=title_plot,
+        )
         return original_list, imputed_list
 
     def knn_purity(self, verbose=False):

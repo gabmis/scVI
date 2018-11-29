@@ -153,8 +153,7 @@ class BrainSmallDataset(Dataset10X):
 
     def __init__(self, save_path="data/"):
         dataset = Dataset10X(filename="neuron_9k", save_path=save_path)
-
-        self.save_path = save_path + "neuron_9k/"
+        self.save_path = save_path
         self.urls = [
             "https://github.com/YosefLab/scVI-data/raw/master/brain_small_metadata.pickle"
         ]
