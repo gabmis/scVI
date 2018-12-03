@@ -110,7 +110,7 @@ class TrainerFish(Trainer):
             lr=lr,
             weight_decay=weight_decay,
         )
-        super(TrainerFish, self).train(n_epochs=20, lr=1e-3, params=None)
+        super(TrainerFish, self).train(n_epochs=n_epochs, lr=1e-3, params=None)
 
     @property
     def posteriors_loop(self):
