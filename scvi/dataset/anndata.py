@@ -1,6 +1,7 @@
 from .dataset import GeneExpressionDataset
 import anndata
 import numpy as np
+import os
 
 
 class AnnDataset(GeneExpressionDataset):
@@ -54,7 +55,7 @@ class AnnDataset(GeneExpressionDataset):
         print("Preprocessing dataset")
 
         ad = anndata.read_h5ad(
-            self.save_path + self.download_name
+            os.path.join(self.save_path, self.download_name)
         )  # obs = cells, var = genes
         gene_names = np.array(ad.var.index.values, dtype=str)
         data = ad.X.toarray()

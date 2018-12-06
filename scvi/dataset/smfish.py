@@ -1,6 +1,7 @@
 import numpy as np
 import loompy
 from .dataset import GeneExpressionDataset
+import os
 
 
 class SmfishDataset(GeneExpressionDataset):
@@ -24,7 +25,7 @@ class SmfishDataset(GeneExpressionDataset):
 
     def preprocess(self):
         print("Preprocessing smFISH dataset")
-        ds = loompy.connect(self.save_path + self.download_name)
+        ds = loompy.connect(os.path.join(self.save_path, self.download_name))
         gene_names = ds.ra["Gene"]
         if self.cell_type_level == "minor":
             select = (
