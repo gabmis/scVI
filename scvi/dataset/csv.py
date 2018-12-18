@@ -84,7 +84,7 @@ class CsvDataset(GeneExpressionDataset):
         labels, cell_types = None, None
         if self.labels_file is not None:
             labels = pd.read_csv(
-                self.save_path + self.labels_file, header=0, index_col=0
+                os.path.join(self.save_path, self.labels_file), header=0, index_col=0
             )
             labels = labels.values
             cell_types = np.unique(labels)
