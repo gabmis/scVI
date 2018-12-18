@@ -306,10 +306,10 @@ class Trainer:
             ret["latent"] += [
                 self.model.sample_from_posterior_z(
                     sample_batch, y=label, give_mean=True
-                )
+                ).cpu()
             ]
             ret["imputed_values"] += [
-                self.model.get_sample_rate(sample_batch, batch_index=batch_index)
+                self.model.get_sample_rate(sample_batch, batch_index=batch_index).cpu()
             ]
         for key in ret.keys():
             if len(ret[key]) > 0:
