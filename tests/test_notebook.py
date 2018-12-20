@@ -94,6 +94,7 @@ class NotebookLoader(object):
                             "save_path = '" + os.getcwd() + "'",
                             code,
                         )
+                        code = re.sub("show_plot = True", "show_plot = False", code)
                         # run the code in themodule
                         exec(code, mod.__dict__)
                         plt.close("all")

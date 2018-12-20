@@ -479,7 +479,12 @@ class Posterior:
 
     @torch.no_grad()
     def imputation_benchmark(
-        self, n_samples=8, verbose=False, title_plot="imputation", save_path=""
+        self,
+        n_samples=8,
+        verbose=False,
+        show_plot=True,
+        title_plot="imputation",
+        save_path="",
     ):
         original_list, imputed_list = self.imputation_list(n_samples=n_samples)
         # Median of medians for all distances
@@ -505,6 +510,7 @@ class Posterior:
         plot_imputation(
             np.concatenate(original_list),
             np.concatenate(imputed_list),
+            show_plot=show_plot,
             title=os.path.join(save_path, title_plot),
         )
         return original_list, imputed_list
@@ -760,7 +766,7 @@ def get_bayes_factors(
     return res
 
 
-def plot_imputation(original, imputed, title="Imputation"):
+def plot_imputation(original, imputed, show_plot=True, title="Imputation"):
     y = imputed
     x = original
 
@@ -804,7 +810,8 @@ def plot_imputation(original, imputed, title="Imputation"):
     plt.plot(linspace, a * linspace, color="black")
 
     plt.plot(linspace, linspace, color="black", linestyle=":")
-    plt.show()
+    if show_plot:
+        plt.show()
     plt.savefig(title + ".png")
 
 
