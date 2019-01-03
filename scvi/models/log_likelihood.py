@@ -89,25 +89,25 @@ def log_zinb_positive(x, mu, theta, pi, eps=1e-8):
             1, theta.size(0)
         )  # In this case, we reshape theta for broadcasting
 
-    case_zero = F.softplus(
-        (-pi + theta * torch.log(theta + eps) - theta * torch.log(theta + mu + eps))
-    ) - F.softplus(-pi)
+    softplus_pi = F.softplus(-pi)
+    log_theta_eps = torch.log(theta + eps)
+    log_theta_mu_eps = torch.log(theta + mu + eps)
+    pi_theta_log = -pi + theta * (log_theta_eps - log_theta_mu_eps)
+
+    case_zero = F.softplus(pi_theta_log) - softplus_pi
+    mul_case_zero = torch.mul((x < eps).type(torch.float32), case_zero)
 
     case_non_zero = (
-        -pi
-        - F.softplus(-pi)
-        + theta * torch.log(theta + eps)
-        - theta * torch.log(theta + mu + eps)
-        + x * torch.log(mu + eps)
-        - x * torch.log(theta + mu + eps)
+        -softplus_pi
+        + pi_theta_log
+        + x * (torch.log(mu + eps) - log_theta_mu_eps)
         + torch.lgamma(x + theta)
         - torch.lgamma(theta)
         - torch.lgamma(x + 1)
     )
 
-    res = torch.mul((x < eps).type(torch.float32), case_zero) + torch.mul(
-        (x > eps).type(torch.float32), case_non_zero
-    )
+    res = mul_case_zero + torch.mul((x > eps).type(torch.float32), case_non_zero)
+
     return torch.sum(res, dim=-1)
 
 
@@ -127,12 +127,11 @@ def log_nb_positive(x, mu, theta, eps=1e-8):
         )  # In this case, we reshape theta for broadcasting
 
     res = (
-        theta * torch.log(theta + eps)
-        - theta * torch.log(theta + mu + eps)
-        + x * torch.log(mu + eps)
-        - x * torch.log(theta + mu + eps)
+        theta * (torch.log(theta + eps) - torch.log(theta + mu + eps))
+        + x * (torch.log(mu + eps) - torch.log(theta + mu + eps))
         + torch.lgamma(x + theta)
         - torch.lgamma(theta)
         - torch.lgamma(x + 1)
     )
+
     return torch.sum(res, dim=-1)

@@ -221,7 +221,6 @@ class VAE(nn.Module):
         px_scale, px_r, px_rate, px_dropout, qz_m, qz_v, z, ql_m, ql_v, library = self.inference(
             x, batch_index, y
         )
-        reconst_loss = self._reconstruction_loss(x, px_rate, px_r, px_dropout)
 
         # KL Divergence
         mean = torch.zeros_like(qz_m)
@@ -235,5 +234,7 @@ class VAE(nn.Module):
             Normal(local_l_mean, torch.sqrt(local_l_var)),
         ).sum(dim=1)
         kl_divergence = kl_divergence_z
+
+        reconst_loss = self._reconstruction_loss(x, px_rate, px_r, px_dropout)
 
         return reconst_loss + kl_divergence_l, kl_divergence
