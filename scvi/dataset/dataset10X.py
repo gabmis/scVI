@@ -171,7 +171,8 @@ class BrainSmallDataset(Dataset10X):
         self.raw_qc = metadata["raw_qc"].loc[dataset.barcodes.values.ravel()]
         self.qc_names = self.raw_qc.columns
         self.qc = self.raw_qc.values
-        super().__init__(
+        Dataset10X.__init__(
+            self,
             dataset.X,
             dataset.local_means,
             dataset.local_vars,
