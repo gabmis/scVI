@@ -7,7 +7,7 @@ class Classifier(nn.Module):
     def __init__(
         self, n_input, n_hidden=128, n_labels=10, n_layers=1, dropout_rate=0.1
     ):
-        super(Classifier, self).__init__()
+        super().__init__()
         self.classifier = nn.Sequential(
             FCLayers(
                 n_in=n_input,

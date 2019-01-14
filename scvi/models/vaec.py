@@ -57,7 +57,7 @@ class VAEC(VAE):
         log_variational=True,
         reconstruction_loss="zinb",
     ):
-        super(VAEC, self).__init__(
+        super().__init__(
             n_input,
             n_batch,
             n_labels,

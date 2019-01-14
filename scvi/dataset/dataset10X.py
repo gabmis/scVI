@@ -92,7 +92,7 @@ class Dataset10X(GeneExpressionDataset):
         self.dense = dense
 
         expression_data, gene_names = self.download_and_preprocess()
-        super(Dataset10X, self).__init__(
+        super().__init__(
             *GeneExpressionDataset.get_attributes_from_matrix(expression_data),
             gene_names=gene_names
         )
@@ -171,7 +171,7 @@ class BrainSmallDataset(Dataset10X):
         self.raw_qc = metadata["raw_qc"].loc[dataset.barcodes.values.ravel()]
         self.qc_names = self.raw_qc.columns
         self.qc = self.raw_qc.values
-        super(Dataset10X, self).__init__(
+        super().__init__(
             dataset.X,
             dataset.local_means,
             dataset.local_vars,

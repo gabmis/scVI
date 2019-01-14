@@ -44,7 +44,7 @@ class AnnDataset(GeneExpressionDataset):
 
         data, gene_names = self.download_and_preprocess()
 
-        super(AnnDataset, self).__init__(
+        super().__init__(
             *GeneExpressionDataset.get_attributes_from_matrix(data),
             gene_names=gene_names
         )

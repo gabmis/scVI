@@ -66,7 +66,7 @@ class SCANVI(VAE):
         use_labels_groups: bool = False,
         classifier_parameters: dict = dict(),
     ):
-        super(SCANVI, self).__init__(
+        super().__init__(
             n_input,
             n_hidden=n_hidden,
             n_latent=n_latent,
@@ -158,7 +158,7 @@ class SCANVI(VAE):
         return w_y
 
     def get_latents(self, x, y=None):
-        zs = super(SCANVI, self).get_latents(x)
+        zs = super().get_latents(x)
         qz2_m, qz2_v, z2 = self.encoder_z2_z1(zs[0], y)
         if not self.training:
             z2 = qz2_m

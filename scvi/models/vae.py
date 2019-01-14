@@ -57,7 +57,7 @@ class VAE(nn.Module):
         log_variational: bool = True,
         reconstruction_loss: str = "zinb",
     ):
-        super(VAE, self).__init__()
+        super().__init__()
         self.dispersion = dispersion
         self.n_latent = n_latent
         self.log_variational = log_variational

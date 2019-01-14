@@ -42,7 +42,7 @@ class HematoDataset(GeneExpressionDataset):
             self.download_and_preprocess()
         )
 
-        super(HematoDataset, self).__init__(
+        super().__init__(
             *GeneExpressionDataset.get_attributes_from_matrix(
                 expression_data, labels=labels
             ),

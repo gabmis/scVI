@@ -47,7 +47,7 @@ class PbmcDataset(GeneExpressionDataset):
             Dataset10X("pbmc4k", save_path=save_path),
         )
         self.barcodes = pd.concat(pbmc.barcodes).values.ravel().astype(str)
-        super(PbmcDataset, self).__init__(
+        super().__init__(
             pbmc.X,
             pbmc.local_means,
             pbmc.local_vars,
@@ -136,7 +136,7 @@ class PurifiedPBMCDataset(GeneExpressionDataset):
 
         pbmc = GeneExpressionDataset.concat_datasets(*datasets, shared_batches=True)
         pbmc.subsample_genes(subset_genes=(np.array(pbmc.X.sum(axis=0)) > 0).ravel())
-        super(PurifiedPBMCDataset, self).__init__(
+        super().__init__(
             pbmc.X,
             pbmc.local_means,
             pbmc.local_vars,

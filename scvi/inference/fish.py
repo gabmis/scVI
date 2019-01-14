@@ -76,9 +76,7 @@ class TrainerFish(Trainer):
         scale=50,
         **kwargs
     ):
-        super(TrainerFish, self).__init__(
-            model, gene_dataset_seq, use_cuda=use_cuda, **kwargs
-        )
+        super().__init__(model, gene_dataset_seq, use_cuda=use_cuda, **kwargs)
         self.kl = None
         self.cl_ratio = cl_ratio
         self.n_epochs_cl = n_epochs_cl
@@ -110,7 +108,7 @@ class TrainerFish(Trainer):
             lr=lr,
             weight_decay=weight_decay,
         )
-        super(TrainerFish, self).train(n_epochs=n_epochs, lr=1e-3, params=None)
+        super().train(n_epochs=n_epochs, lr=1e-3, params=None)
 
     @property
     def posteriors_loop(self):
