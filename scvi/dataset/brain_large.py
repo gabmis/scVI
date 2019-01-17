@@ -178,9 +178,7 @@ class BrainLargeDataset(GeneExpressionDataset):
         self.download_name = "genomics.h5"
 
         Xs = self.download_and_preprocess()
-        super(BrainLargeDataset, self).__init__(
-            *GeneExpressionDataset.get_attributes_from_list(Xs)
-        )
+        super().__init__(*GeneExpressionDataset.get_attributes_from_list(Xs))
 
     def preprocess(self):
         print("Preprocessing Brain Large data")

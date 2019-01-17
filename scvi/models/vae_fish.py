@@ -57,7 +57,7 @@ class VAEF(VAE):
         reconstruction_loss_fish="poisson",
         model_library=False,
     ):
-        super(VAEF, self).__init__(
+        super().__init__(
             n_input,
             dispersion=dispersion,
             n_latent=n_hidden,

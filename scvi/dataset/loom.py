@@ -36,7 +36,7 @@ class LoomDataset(GeneExpressionDataset):
             data, labels=labels
         )
         batch_indices = batch_indices if batch_indices is not None else batch_indices_
-        super(LoomDataset, self).__init__(
+        super().__init__(
             X,
             local_means,
             local_vars,
@@ -93,7 +93,7 @@ class RetinaDataset(LoomDataset):
     """
 
     def __init__(self, save_path="data/"):
-        super(RetinaDataset, self).__init__(
+        super().__init__(
             filename="retina.loom",
             save_path=save_path,
             url="https://github.com/YosefLab/scVI-data/raw/master/retina.loom",

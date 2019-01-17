@@ -16,7 +16,7 @@ class SmfishDataset(GeneExpressionDataset):
         data, labels, gene_names, cell_types, x_coord, y_coord = (
             self.download_and_preprocess()
         )
-        super(SmfishDataset, self).__init__(
+        super().__init__(
             *GeneExpressionDataset.get_attributes_from_matrix(data, labels=labels),
             gene_names=gene_names,
             x_coord=x_coord,

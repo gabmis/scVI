@@ -97,7 +97,7 @@ class ClassifierTrainer(Trainer):
 
     def __init__(self, *args, sampling_model=None, use_cuda=True, **kwargs):
         self.sampling_model = sampling_model
-        super(ClassifierTrainer, self).__init__(*args, use_cuda=use_cuda, **kwargs)
+        super().__init__(*args, use_cuda=use_cuda, **kwargs)
         self.train_set, self.test_set = self.train_test(
             self.model, self.gene_dataset, type_class=AnnotationPosterior
         )
@@ -144,7 +144,7 @@ class SemiSupervisedTrainer(UnsupervisedTrainer):
         """
         :param n_labelled_samples_per_class: number of labelled samples per class
         """
-        super(SemiSupervisedTrainer, self).__init__(model, gene_dataset, **kwargs)
+        super().__init__(model, gene_dataset, **kwargs)
         self.model = model
         self.gene_dataset = gene_dataset
 
@@ -198,7 +198,7 @@ class SemiSupervisedTrainer(UnsupervisedTrainer):
         super().__setattr__(key, value)
 
     def loss(self, tensors_all, tensors_labelled):
-        loss = super(SemiSupervisedTrainer, self).loss(tensors_all)
+        loss = super().loss(tensors_all)
         sample_batch, _, _, _, y = tensors_labelled
         classification_loss = F.cross_entropy(
             self.model.classify(sample_batch), y.view(-1)
@@ -212,7 +212,7 @@ class SemiSupervisedTrainer(UnsupervisedTrainer):
             self.n_epochs_classifier, lr=self.lr_classification
         )
         self.model.train()
-        return super(SemiSupervisedTrainer, self).on_epoch_end()
+        return super().on_epoch_end()
 
     def create_posterior(
         self,
@@ -222,7 +222,7 @@ class SemiSupervisedTrainer(UnsupervisedTrainer):
         indices=None,
         type_class=AnnotationPosterior,
     ):
-        return super(SemiSupervisedTrainer, self).create_posterior(
+        return super().create_posterior(
             model, gene_dataset, shuffle, indices, type_class
         )
 
@@ -230,15 +230,15 @@ class SemiSupervisedTrainer(UnsupervisedTrainer):
 class JointSemiSupervisedTrainer(SemiSupervisedTrainer):
     def __init__(self, model, gene_dataset, **kwargs):
         kwargs.update({"n_epochs_classifier": 0})
-        super(JointSemiSupervisedTrainer, self).__init__(model, gene_dataset, **kwargs)
+        super().__init__(model, gene_dataset, **kwargs)
 
 
 class AlternateSemiSupervisedTrainer(SemiSupervisedTrainer):
     def __init__(self, *args, **kwargs):
-        super(AlternateSemiSupervisedTrainer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def loss(self, all_tensor):
-        return super(SemiSupervisedTrainer, self).loss(all_tensor)
+        return UnsupervisedTrainer.loss(self, all_tensor)
 
     @property
     def posteriors_loop(self):
