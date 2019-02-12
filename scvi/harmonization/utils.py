@@ -97,17 +97,18 @@ def plot_marker_genes_compare(latent_u, count, genenames, markers, subset):
         plt.title(x + " control")
         plt.tight_layout()
         plt.subplot(nrow, 2, (i * 2 + 2))
+        subset = np.asarray([not x for x in subset])
         plt.scatter(
-            latent_u[subset == False, 0],
-            latent_u[subset == False, 1],
+            latent_u[subset, 0],
+            latent_u[subset, 1],
             c="lightgrey",
             edgecolors="none",
             s=5,
         )
         plt.scatter(
-            latent_u[idx, 0][subset[idx] == False],
-            latent_u[idx, 1][subset[idx] == False],
-            c=exprs[idx][subset[idx] == False],
+            latent_u[idx, 0][subset[idx]],
+            latent_u[idx, 1][subset[idx]],
+            c=exprs[idx][subset[idx]],
             cmap=plt.get_cmap("viridis_r"),
             edgecolors="none",
             s=3,
