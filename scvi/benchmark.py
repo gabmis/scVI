@@ -13,8 +13,11 @@ def cortex_benchmark(n_epochs=250, use_cuda=True, save_path="data/", show_plot=T
     vae = VAE(cortex_dataset.nb_genes)
     trainer_cortex_vae = UnsupervisedTrainer(vae, cortex_dataset, use_cuda=use_cuda)
     trainer_cortex_vae.train(n_epochs=n_epochs)
+    couple_celltypes = (4, 5)  # the couple types on which to study DE
+    cell_idx1 = cortex_dataset.labels.ravel() == couple_celltypes[0]
+    cell_idx2 = cortex_dataset.labels.ravel() == couple_celltypes[1]
     trainer_cortex_vae.train_set.differential_expression_score(
-        "oligodendrocytes", "pyramidal CA1", genes=["THY1", "MBP"]
+        cell_idx1, cell_idx2, genes=["THY1", "MBP"]
     )
 
     trainer_cortex_vae.test_set.ll()  # assert ~ 1200
