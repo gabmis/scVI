@@ -405,6 +405,7 @@ class Posterior:
                     idx2=idx2,
                     M_permutation=M_permutation,
                     n_samples=n_samples,
+                    sample_pairs=False,
                 )
                 res["clusters"] = np.repeat(x, len(res.index))
                 de_res.append(res)
