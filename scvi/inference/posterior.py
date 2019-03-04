@@ -264,6 +264,7 @@ class Posterior:
         n_samples=None,
         M_permutation=None,
         all_stats=True,
+        sample_pairs=True,
     ):
         if n_samples is None:
             n_samples = 5000
@@ -293,6 +294,7 @@ class Posterior:
             cell_idx=0,
             M_permutation=M_permutation,
             permutation=False,
+            sample_pairs=sample_pairs,
         )
         if all_stats is True:
             bayes1_permuted = get_bayes_factors(
@@ -301,6 +303,7 @@ class Posterior:
                 cell_idx=0,
                 M_permutation=M_permutation,
                 permutation=True,
+                sample_pairs=sample_pairs,
             )
             bayes2 = get_bayes_factors(
                 px_scale,
@@ -308,6 +311,7 @@ class Posterior:
                 cell_idx=1,
                 M_permutation=M_permutation,
                 permutation=False,
+                sample_pairs=sample_pairs,
             )
             bayes2_permuted = get_bayes_factors(
                 px_scale,
@@ -315,6 +319,7 @@ class Posterior:
                 cell_idx=1,
                 M_permutation=M_permutation,
                 permutation=True,
+                sample_pairs=sample_pairs,
             )
             mean1, mean2, nonz1, nonz2, norm_mean1, norm_mean2 = self.gene_dataset.raw_counts_properties(
                 idx1, idx2
@@ -899,6 +904,7 @@ def get_bayes_factors(
     genes_idx=None,
     M_permutation=10000,
     permutation=False,
+    sample_pairs=True,
 ):
     """
     Returns a list of bayes factor for all genes
@@ -924,26 +930,29 @@ def get_bayes_factors(
     # agregate dataset
     samples = np.vstack((sample_rate_a, sample_rate_b))
 
-    # prepare the pairs for sampling
-    list_1 = list(np.arange(sample_rate_a.shape[0]))
-    list_2 = list(sample_rate_a.shape[0] + np.arange(sample_rate_b.shape[0]))
-    if not permutation:
-        # case1: no permutation, sample from A and then from B
-        u, v = (
-            np.random.choice(list_1, size=M_permutation),
-            np.random.choice(list_2, size=M_permutation),
-        )
+    if sample_pairs is True:
+        # prepare the pairs for sampling
+        list_1 = list(np.arange(sample_rate_a.shape[0]))
+        list_2 = list(sample_rate_a.shape[0] + np.arange(sample_rate_b.shape[0]))
+        if not permutation:
+            # case1: no permutation, sample from A and then from B
+            u, v = (
+                np.random.choice(list_1, size=M_permutation),
+                np.random.choice(list_2, size=M_permutation),
+            )
+        else:
+            # case2: permutation, sample from A+B twice
+            u, v = (
+                np.random.choice(list_1 + list_2, size=M_permutation),
+                np.random.choice(list_1 + list_2, size=M_permutation),
+            )
+
+        # then constitutes the pairs
+        first_set = samples[u]
+        second_set = samples[v]
     else:
-        # case2: permutation, sample from A+B twice
-        u, v = (
-            np.random.choice(list_1 + list_2, size=M_permutation),
-            np.random.choice(list_1 + list_2, size=M_permutation),
-        )
-
-    # then constitutes the pairs
-    first_set = samples[u]
-    second_set = samples[v]
-
+        first_set = sample_rate_a
+        second_set = sample_rate_b
     res = np.mean(first_set >= second_set, 0)
     res = np.log(res + 1e-8) - np.log(1 - res + 1e-8)
     return res
