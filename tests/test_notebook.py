@@ -127,7 +127,7 @@ class NotebookFinder(object):
 sys.meta_path.append(NotebookFinder())
 
 
-def _test_notebooks_annotation(save_path):
+def test_notebooks_annotation(save_path):
 
     try:
         os.chdir(save_path)
@@ -142,7 +142,7 @@ def _test_notebooks_annotation(save_path):
         os.chdir(path=base_path)
 
 
-def _test_notebook_smfish(save_path):
+def test_notebook_smfish(save_path):
 
     try:
         os.chdir(save_path)
@@ -157,7 +157,7 @@ def _test_notebook_smfish(save_path):
         os.chdir(path=base_path)
 
 
-def _test_notebooks_dataloading(save_path):
+def test_notebooks_dataloading(save_path):
 
     try:
         os.chdir(save_path)
@@ -187,7 +187,7 @@ def test_notebooks_basictutorial(save_path):
         os.chdir(path=base_path)
 
 
-def _test_notebooks_reproducibility(save_path):
+def test_notebooks_reproducibility(save_path):
 
     try:
         os.chdir(save_path)
@@ -202,7 +202,7 @@ def _test_notebooks_reproducibility(save_path):
         os.chdir(path=base_path)
 
 
-def _test_notebooks_harmonization(save_path):
+def test_notebooks_harmonization(save_path):
 
     try:
         os.chdir(save_path)
