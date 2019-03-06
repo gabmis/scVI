@@ -101,6 +101,8 @@ class ClassifierTrainer(Trainer):
         self.train_set, self.test_set = self.train_test(
             self.model, self.gene_dataset, type_class=AnnotationPosterior
         )
+        self.train_set.to_monitor = ["accuracy"]
+        self.test_set.to_monitor = ["accuracy"]
 
     @property
     def posteriors_loop(self):
