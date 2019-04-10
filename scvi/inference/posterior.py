@@ -246,6 +246,7 @@ class Posterior:
         else:
             if selection.dtype is np.dtype("bool"):
                 selection = np.asarray(np.where(selection)[0].ravel())
+        old_loader = self.data_loader
         for i in batchid:
             idx = np.random.choice(
                 np.arange(len(self.gene_dataset))[selection], n_samples
@@ -254,9 +255,7 @@ class Posterior:
             self.data_loader_kwargs.update({"sampler": sampler})
             self.data_loader = DataLoader(self.gene_dataset, **self.data_loader_kwargs)
             px_scales.append(self.get_harmonized_scale(i))
-        sampler = RandomSampler(self.gene_dataset)
-        self.data_loader_kwargs.update({"sampler": sampler})
-        self.data_loader = DataLoader(self.gene_dataset, **self.data_loader_kwargs)
+        self.data_loader = old_loader
         px_scales = np.concatenate(px_scales)
         return px_scales
 
