@@ -134,14 +134,12 @@ sys.meta_path.append(NotebookFinder())
 
 
 def test_notebooks_annotation(save_path):
-
     try:
         os.chdir(save_path)
         import notebooks.annotation
 
         notebooks.annotation.allow_notebook_for_test()
         plt.close("all")
-
     except BaseException:
         raise
     finally:
@@ -149,14 +147,12 @@ def test_notebooks_annotation(save_path):
 
 
 def test_notebook_smfish(save_path):
-
     try:
         os.chdir(save_path)
         import notebooks.scRNA_and_smFISH
 
         notebooks.scRNA_and_smFISH.allow_notebook_for_test()
         plt.close("all")
-
     except BaseException:
         raise
     finally:
@@ -164,14 +160,12 @@ def test_notebook_smfish(save_path):
 
 
 def test_notebooks_dataloading(save_path):
-
     try:
         os.chdir(save_path)
         import notebooks.data_loading
 
         notebooks.data_loading.allow_notebook_for_test()
         plt.close("all")
-
     except BaseException:
         raise
     finally:
@@ -179,14 +173,12 @@ def test_notebooks_dataloading(save_path):
 
 
 def test_notebooks_basictutorial(save_path):
-
     try:
         os.chdir(save_path)
         import notebooks.basic_tutorial
 
         notebooks.basic_tutorial.allow_notebook_for_test()
         plt.close("all")
-
     except BaseException:
         raise
     finally:
@@ -194,14 +186,12 @@ def test_notebooks_basictutorial(save_path):
 
 
 def test_notebooks_reproducibility(save_path):
-
     try:
         os.chdir(save_path)
         import notebooks.scVI_reproducibility
 
         notebooks.scVI_reproducibility.allow_notebook_for_test()
         plt.close("all")
-
     except BaseException:
         raise
     finally:
@@ -209,14 +199,12 @@ def test_notebooks_reproducibility(save_path):
 
 
 def test_notebooks_harmonization(save_path):
-
     try:
         os.chdir(save_path)
         import notebooks.harmonization
 
         notebooks.harmonization.allow_notebook_for_test()
         plt.close("all")
-
     except BaseException:
         raise
     finally:
@@ -231,7 +219,6 @@ def test_notebooks_scanpy_api(save_path):
         print(save_path)
         notebooks.scanpy_pbmc3k.allow_notebook_for_test()
         plt.close("all")
-
     except BaseException:
         raise
     finally:
