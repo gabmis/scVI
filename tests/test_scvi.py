@@ -33,6 +33,7 @@ from scvi.dataset import (
     PurifiedPBMCDataset,
     SyntheticDatasetCorr,
     ZISyntheticDatasetCorr,
+    Dataset10X,
 )
 from scvi.inference import (
     JointSemiSupervisedTrainer,
@@ -409,3 +410,13 @@ def test_sampling_zl(save_path):
     )
     trainer_cortex_cls.train(n_epochs=2)
     trainer_cortex_cls.test_set.accuracy()
+
+
+def test_new_10x():
+    """
+    Test new 10X data format, which is a bit different than newer ones
+    :return:
+    """
+    data = Dataset10X("pbmc_1k_v2")
+    data.subsample_genes(new_n_genes=100)
+    assert data.X.shape[1] == 100
