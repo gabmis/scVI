@@ -129,7 +129,7 @@ class VAEF(VAE):
         #doesn't really sample, returns the mean of the posterior distribution
 
         :param x: tensor of values with shape ``(batch_size, n_input)``
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :param y: tensor of cell-types labels with shape ``(batch_size, n_labels)``
         :param mode: string that indicates the type of data we analyse
         :return: tensor of shape ``(batch_size, n_latent)``
@@ -152,7 +152,7 @@ class VAEF(VAE):
         #doesn't really sample, returns the tensor of the means of the posterior distribution
 
         :param x: tensor of values with shape ``(batch_size, n_input)``
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :param y: tensor of cell-types labels with shape ``(batch_size, n_labels)``
         :param mode: string that indicates the type of data we analyse
         :return: tensor of shape ``(batch_size, 1)``
@@ -169,12 +169,12 @@ class VAEF(VAE):
         r"""Returns the tensor of predicted frequencies of expression
 
         :param x: tensor of values with shape ``(batch_size, n_input)``
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :param mode: string that indicates the type of data we analyse
         :param batch_index: array that indicates which batch the cells belong to with shape ``batch_size``
         :param y: tensor of cell-types labels with shape ``(batch_size, n_labels)``
         :return: tensor of predicted frequencies of expression with shape ``(batch_size, n_input)``
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :rtype: :py:class:`torch.Tensor`
         """
         z = self.sample_from_posterior_z(x, y, mode)  # y only used in VAEC
@@ -186,11 +186,11 @@ class VAEF(VAE):
         r"""Returns the tensor of means of the negative binomial distribution
 
         :param x: tensor of values with shape ``(batch_size, n_input)``
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :param y: tensor of cell-types labels with shape ``(batch_size, n_labels)``
         :param mode: string that indicates the type of data we analyse
         :return: tensor of means of the negative binomial distribution with shape ``(batch_size, n_input)``
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :rtype: :py:class:`torch.Tensor`
         """
         if mode == "scRNA":
@@ -231,7 +231,7 @@ class VAEF(VAE):
         #for each cell, it gives the probability distribution over the different labels
 
         :param x: tensor of values with shape (batch_size, n_input)
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :param mode: string that indicates the type of data we analyse
         :return: tensor of probabilities with shape``(batch_size, n_labels)``
         :rtype: :py:class:`torch.Tensor`
@@ -280,11 +280,11 @@ class VAEF(VAE):
         r""" Returns the reconstruction loss and the Kullback divergences
 
         :param x: tensor of values with shape ``(batch_size, n_input)``
-        or ``(batch_size, n_input_fish)`` depending on the mode
+            or ``(batch_size, n_input_fish)`` depending on the mode
         :param local_l_mean: tensor of means of the prior distribution of latent variable l
-        with shape (batch_size, 1)
+            with shape (batch_size, 1)
         :param local_l_var: tensor of variances of the prior distribution of latent variable l
-        with shape (batch_size, 1)
+            with shape (batch_size, 1)
         :param batch_index: array that indicates which batch the cells belong to with shape ``batch_size``
         :param y: tensor of cell-types labels with shape (batch_size, n_labels)
         :param mode: string that indicates the type of data we analyse
