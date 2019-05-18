@@ -670,12 +670,17 @@ class Posterior:
     ):
         if original_list is None or imputed_list is None:
             original_list, imputed_list = self.imputation_list(n_samples=n_samples)
-            if len(original_list) == 0:
-                print("No difference between corrupted dataset and uncorrupted dataset")
-                return 0
-        return np.median(
-            np.abs(np.concatenate(original_list) - np.concatenate(imputed_list))
+
+        original_list_concat = np.concatenate(original_list)
+        imputed_list_concat = np.concatenate(imputed_list)
+        are_lists_empty = (len(original_list_concat) == 0) and (
+            len(imputed_list_concat) == 0
         )
+        if are_lists_empty:
+            print("No difference between corrupted dataset and uncorrupted dataset")
+            return 0.0
+        else:
+            return np.median(np.abs(original_list_concat - imputed_list_concat))
 
     @torch.no_grad()
     def imputation_benchmark(
