@@ -1,11 +1,14 @@
-from abc import abstractmethod
 import copy
+import os
+
+from abc import abstractmethod
+from typing import List, Optional, Union
 
 import numpy as np
 import pandas as pd
 import scipy
 import torch
-import os
+
 from matplotlib import pyplot as plt
 from scipy.stats import kde, entropy
 from sklearn.cluster import KMeans
@@ -22,11 +25,10 @@ from torch.utils.data.sampler import (
     SubsetRandomSampler,
     RandomSampler,
 )
-from typing import List, Optional, Union
-
 
 from scvi.models.log_likelihood import (
-    compute_log_likelihood,
+    compute_elbo,
+    compute_reconstruction_error,
     compute_marginal_log_likelihood,
 )
 
@@ -37,9 +39,9 @@ class SequentialSubsetSampler(SubsetRandomSampler):
 
 
 class Posterior:
-    r"""The functional data unit. A `Posterior` instance is instanciated with a model and a gene_dataset, and
+    r"""The functional data unit. A `Posterior` instance is instantiated with a model and a gene_dataset, and
     as well as additional arguments that for Pytorch's `DataLoader`. A subset of indices can be specified, for
-    purpose such as splitting the data into train/test or labelled/unlabelled (for semi-supervised learning).
+    purposes such as splitting the data into train/test or labelled/unlabelled (for semi-supervised learning).
     Each trainer instance of the `Trainer` class can therefore have multiple `Posterior` instances to train a model.
     A `Posterior` instance also comes with many methods or utilities for its corresponding data.
 
@@ -53,7 +55,7 @@ class Posterior:
 
     Examples:
 
-    Let's instanciate a `trainer`, with a gene_dataset and a model
+    Let us instantiate a `trainer`, with a gene_dataset and a model
 
         >>> gene_dataset = CortexDataset()
         >>> vae = VAE(gene_dataset.nb_genes, n_batch=gene_dataset.n_batches * False,
@@ -67,9 +69,9 @@ class Posterior:
     scVI model
 
         >>> trainer.train_set.differential_expression_stats()
-        >>> trainer.train_set.ll()
+        >>> trainer.train_set.reconstruction_error()
         >>> trainer.train_set.entropy_batch_mixing()
-        >>> trainer.train_set.show_t_sne(n_samples=1000, color_by='labels')
+        >>> trainer.train_set.show_t_sne(n_samples=1000, color_by="labels")
 
     """
 
@@ -150,14 +152,25 @@ class Posterior:
     def uncorrupted(self):
         return self.update({"collate_fn": self.gene_dataset.collate_fn})
 
-    def ll(self, verbose=False):
-        ll = compute_log_likelihood(self.model, self)
+    @torch.no_grad()
+    def elbo(self, verbose=False):
+        elbo = compute_elbo(self.model, self)
         if verbose:
-            print("LL : %.4f" % ll)
-        return ll
+            print("ELBO : %.4f" % elbo)
+        return elbo
 
-    ll.mode = "min"
+    elbo.mode = "min"
 
+    @torch.no_grad()
+    def reconstruction_error(self, verbose=False):
+        reconstruction_error = compute_reconstruction_error(self.model, self)
+        if verbose:
+            print("Reconstruction Error : %.4f" % reconstruction_error)
+        return reconstruction_error
+
+    reconstruction_error.mode = "min"
+
+    @torch.no_grad()
     def marginal_ll(self, verbose=False, n_mc_samples=1000):
         ll = compute_marginal_log_likelihood(self.model, self, n_mc_samples)
         if verbose:
@@ -624,7 +637,7 @@ class Posterior:
         posterior_list = []
         batch_size = (
             128
-        )  # max(self.data_loader_kwargs['batch_size'] // n_samples, 2)  # Reduce batch_size on GPU
+        )  # max(self.data_loader_kwargs["batch_size"] // n_samples, 2)  # Reduce batch_size on GPU
         for tensors in self.update({"batch_size": batch_size}):
             sample_batch, _, _, batch_index, labels = tensors
             px_dispersion, px_rate = self.model.inference(
@@ -636,10 +649,10 @@ class Posterior:
             #
             l_train = np.random.gamma(r, p / (1 - p))
             X = np.random.poisson(l_train)
-            # '''
+            # """
             # In numpy (shape, scale) => (concentration, rate), with scale = p /(1 - p)
             # rate = (1 - p) / p  # = 1/scale # used in pytorch
-            # '''
+            # """
             original_list += [np.array(sample_batch.cpu())]
             posterior_list += [X]
 
@@ -726,7 +739,7 @@ class Posterior:
     def imputation_list(self, n_samples=1):
         original_list = []
         imputed_list = []
-        batch_size = 10000  # self.data_loader_kwargs['batch_size'] // n_samples
+        batch_size = 10000  # self.data_loader_kwargs["batch_size"] // n_samples
         for tensors, corrupted_tensors in zip(
             self.uncorrupted().sequential(batch_size=batch_size),
             self.corrupted().sequential(batch_size=batch_size),

@@ -58,7 +58,7 @@ def test_cortex(save_path):
         vae, cortex_dataset, train_size=0.5, use_cuda=use_cuda
     )
     trainer_cortex_vae.train(n_epochs=1)
-    trainer_cortex_vae.train_set.ll()
+    trainer_cortex_vae.train_set.reconstruction_error()
     trainer_cortex_vae.train_set.differential_expression_stats()
 
     trainer_cortex_vae.corrupt_posteriors(corruption="binomial")
@@ -78,7 +78,7 @@ def test_cortex(save_path):
     )
     trainer_cortex_svaec.train(n_epochs=1)
     trainer_cortex_svaec.labelled_set.accuracy()
-    trainer_cortex_svaec.full_dataset.ll()
+    trainer_cortex_svaec.full_dataset.reconstruction_error()
 
     svaec = SCANVI(
         cortex_dataset.nb_genes, cortex_dataset.n_batches, cortex_dataset.n_labels
@@ -158,9 +158,9 @@ def test_synthetic_2():
         use_cuda=use_cuda,
         frequency=1,
         early_stopping_kwargs={
-            "early_stopping_metric": "ll",
+            "early_stopping_metric": "reconstruction_error",
             "on": "labelled_set",
-            "save_best_state_metric": "ll",
+            "save_best_state_metric": "reconstruction_error",
         },
     )
     trainer_synthetic_vaec.train(n_epochs=2)

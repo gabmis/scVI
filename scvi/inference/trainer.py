@@ -50,11 +50,16 @@ class Trainer:
         benchmark=False,
         verbose=False,
         frequency=None,
-        weight_decay=1e-6,
-        early_stopping_kwargs=dict(),
-        data_loader_kwargs=dict(),
+        weight_decay=0,
+        early_stopping_kwargs=None,
+        data_loader_kwargs=None,
         show_progbar=True,
     ):
+        # handle mutable defaults
+        early_stopping_kwargs = (
+            early_stopping_kwargs if early_stopping_kwargs else dict()
+        )
+        data_loader_kwargs = data_loader_kwargs if data_loader_kwargs else dict()
 
         self.model = model
         self.gene_dataset = gene_dataset
@@ -74,6 +79,9 @@ class Trainer:
             self.metrics_to_monitor = self.default_metrics_to_monitor
 
         self.early_stopping = EarlyStopping(**early_stopping_kwargs)
+
+        if self.early_stopping.early_stopping_metric:
+            self.metrics_to_monitor.append(self.early_stopping.early_stopping_metric)
 
         self.use_cuda = use_cuda and torch.cuda.is_available()
         if self.use_cuda:
@@ -111,6 +119,9 @@ class Trainer:
                                 print(print_name, end=" : ")
                             result = getattr(posterior, metric)(verbose=self.verbose)
                             self.history[metric + "_" + name] += [result]
+                    for metric in self.metrics_to_monitor:
+                        result = getattr(posterior, metric)(verbose=self.verbose)
+                        self.history[metric + "_" + name] += [result]
                 self.model.train()
         self.compute_metrics_time += time.time() - begin
 
@@ -122,8 +133,8 @@ class Trainer:
             params = filter(lambda p: p.requires_grad, self.model.parameters())
 
         optimizer = self.optimizer = torch.optim.Adam(
-            params, lr=lr, eps=eps
-        )  # weight_decay=self.weight_decay,
+            params, lr=lr, eps=eps, weight_decay=self.weight_decay
+        )
 
         self.compute_metrics_time = 0
         self.n_epochs = n_epochs

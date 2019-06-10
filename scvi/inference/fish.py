@@ -5,16 +5,25 @@ import torch.nn.functional as F
 from scvi.inference import Posterior
 from scvi.inference import Trainer
 from scvi.models.classifier import Classifier
-from scvi.models.log_likelihood import compute_log_likelihood
+from scvi.models.log_likelihood import compute_reconstruction_error, compute_elbo
 
 
 class FishPosterior(Posterior):
     @torch.no_grad()
-    def ll(self, verbose=False):
-        ll = compute_log_likelihood(self.model, self, mode="smFISH")
+    def elbo(self, verbose=False):
+        elbo = compute_elbo(self.model, self, mode="smFISH")
         if verbose:
-            print("LL Fish: %.4f" % ll)
-        return ll
+            print("ELBO Fish: %.4f" % elbo)
+        return elbo
+
+    @torch.no_grad()
+    def reconstruction_error(self, verbose=False):
+        reconstruction_error = compute_reconstruction_error(
+            self.model, self, mode="smFISH"
+        )
+        if verbose:
+            print("Reconstruction Error Fish: %.4f" % reconstruction_error)
+        return reconstruction_error
 
     @torch.no_grad()
     def show_spatial_expression(
@@ -57,7 +66,7 @@ class TrainerFish(Trainer):
         >>> trainer = TrainerFish(gene_dataset_seq, gene_dataset_fish, vaef, train_size=0.5)
         >>> trainer.train(n_epochs=20, lr=1e-3)
     """
-    default_metrics_to_monitor = ["ll"]
+    default_metrics_to_monitor = ["reconstruction_error"]
 
     def __init__(
         self,
@@ -94,8 +103,8 @@ class TrainerFish(Trainer):
         self.train_fish, self.test_fish = self.train_test(
             self.model, gene_dataset_fish, train_size, test_size, seed, FishPosterior
         )
-        self.test_seq.to_monitor = ["ll"]
-        self.test_fish.to_monitor = ["ll"]
+        self.test_seq.to_monitor = ["reconstruction_error"]
+        self.test_fish.to_monitor = ["reconstruction_error"]
 
     def train(self, n_epochs=20, lr=1e-3, weight_decay=1e-6, params=None):
         self.adversarial_cls = Classifier(
