@@ -3,6 +3,7 @@ import numpy as np
 from scipy.sparse import csc_matrix, csr_matrix, vstack
 from sklearn.preprocessing import StandardScaler
 import os
+import logging
 
 from .dataset import GeneExpressionDataset
 
@@ -181,7 +182,7 @@ class BrainLargeDataset(GeneExpressionDataset):
         super().__init__(*GeneExpressionDataset.get_attributes_from_list(Xs))
 
     def preprocess(self):
-        print("Preprocessing Brain Large data")
+        logging.info("Preprocessing Brain Large data")
 
         filtered_matrix_h5 = os.path.join(self.save_path, self.download_name)
         with h5py.File(filtered_matrix_h5, "r") as f:
@@ -225,7 +226,7 @@ class BrainLargeDataset(GeneExpressionDataset):
                 nb_filtered = nb_sparse[:, subset_genes]
                 del nb_sparse
                 nb_matrices.append(nb_filtered)
-                print(
+                logging.info(
                     "loaded {} / {} cells".format(
                         i * nb_cells + nb2_cells, self.subsample_size
                     )
@@ -236,14 +237,14 @@ class BrainLargeDataset(GeneExpressionDataset):
         matrix = vstack(nb_matrices)
         good_cells = matrix.sum(axis=1) > 0
         good_cells = np.squeeze(np.asarray(good_cells))
-        print(
+        logging.info(
             "excluding {} cells with zero genes expressed".format(
                 len(good_cells) - good_cells.sum()
             )
         )
         matrix = matrix[good_cells, :]
 
-        print("%d cells subsampled" % matrix.shape[0])
-        print("%d genes subsampled" % matrix.shape[1])
+        logging.info("%d cells subsampled" % matrix.shape[0])
+        logging.info("%d genes subsampled" % matrix.shape[1])
 
         return [matrix]

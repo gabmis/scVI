@@ -2,6 +2,7 @@ from .dataset import GeneExpressionDataset
 import pandas as pd
 import numpy as np
 import os
+import logging
 
 
 class CsvDataset(GeneExpressionDataset):
@@ -72,7 +73,7 @@ class CsvDataset(GeneExpressionDataset):
         self.subsample_genes(new_n_genes, subset_genes)
 
     def preprocess(self):
-        print("Preprocessing dataset")
+        logging.info("Preprocessing dataset")
 
         if self.gene_by_cell:
             data = pd.read_csv(
@@ -105,7 +106,7 @@ class CsvDataset(GeneExpressionDataset):
             batch_ids = batch_ids.values
 
         data = data.values
-        print("Finished preprocessing dataset")
+        logging.info("Finished preprocessing dataset")
         return data, gene_names, labels, cell_types, batch_ids
 
 

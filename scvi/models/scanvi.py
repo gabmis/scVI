@@ -79,7 +79,6 @@ class SCANVI(VAE):
         )
 
         self.n_labels = n_labels
-        self.n_latent_layers = 2
         # Classifier takes n_latent as input
         cls_parameters = {
             "n_layers": n_layers,

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import os
+import logging
 from .dataset import GeneExpressionDataset
 
 available_datasets = {
@@ -44,7 +45,7 @@ class CiteSeqDataset(GeneExpressionDataset):
         )
 
     def preprocess(self):
-        print("Preprocessing data")
+        logging.info("Preprocessing data")
         self.expression = expression = pd.read_csv(
             os.path.join(self.save_path, self.download_name_rna),
             index_col=0,
@@ -73,7 +74,7 @@ class CiteSeqDataset(GeneExpressionDataset):
         human_filter = np.array(
             [name.startswith("HUMAN") for name in gene_symbols], dtype=np.bool
         )
-        print(
+        logging.info(
             "Selecting only HUMAN genes (%d / %d)"
             % (human_filter.sum(), len(human_filter))
         )
@@ -87,7 +88,7 @@ class CiteSeqDataset(GeneExpressionDataset):
             )
         )
 
-        print("Finish preprocessing data")
+        logging.info("Finish preprocessing data")
         return expression_data
 
 
