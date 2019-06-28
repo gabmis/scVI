@@ -27,7 +27,7 @@ def cortex_benchmark(n_epochs=250, use_cuda=True, save_path="data/", show_plot=T
     trainer_cortex_vae.train(n_epochs=n_epochs)
     trainer_cortex_vae.uncorrupt_posteriors()
     trainer_cortex_vae.train_set.imputation_benchmark(
-        verbose=(n_epochs > 1), save_path=save_path, show_plot=show_plot
+        save_path=save_path, show_plot=show_plot
     )
 
     n_samples = 10 if n_epochs == 1 else None  # n_epochs == 1 is unit tests
@@ -39,8 +39,8 @@ def benchmark(dataset, n_epochs=250, use_cuda=True):
     vae = VAE(dataset.nb_genes, n_batch=dataset.n_batches)
     trainer = UnsupervisedTrainer(vae, dataset, use_cuda=use_cuda)
     trainer.train(n_epochs=n_epochs)
-    trainer.test_set.reconstruction_error(verbose=True)
-    trainer.test_set.marginal_ll(verbose=True)
+    trainer.test_set.reconstruction_error()
+    trainer.test_set.marginal_ll()
     return trainer
 
 
@@ -58,8 +58,8 @@ def ldvae_benchmark(dataset, n_epochs, use_cuda=True):
     ldvae = LDVAE(dataset.nb_genes, n_batch=dataset.n_batches)
     trainer = UnsupervisedTrainer(ldvae, dataset, use_cuda=use_cuda)
     trainer.train(n_epochs=n_epochs)
-    trainer.test_set.reconstruction_error(verbose=True)
-    trainer.test_set.marginal_ll(verbose=True)
+    trainer.test_set.reconstruction_error()
+    trainer.test_set.marginal_ll()
 
     ldvae.get_loadings()
 
@@ -96,7 +96,6 @@ def benchmark_fish_scrna(gene_dataset_seq, gene_dataset_fish):
         gene_dataset_seq,
         gene_dataset_fish,
         train_size=0.9,
-        verbose=True,
         frequency=5,
         weight_decay=0.35,
         n_epochs_even=100,
